@@ -3,6 +3,7 @@
 <head>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/geneInfo.css">
 
 </head>
 <body ng-app="geneInfoApp">
@@ -49,16 +50,37 @@
                     <td>
                         <div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
                             <table class="table table-condensed table-strip">
-                                <tr>
-                                    <th>Translation</th><td colspan="4">{{transcript.Translation.id}}</td>
+                                <tr ng-show="transcript.protein">
+                                    <th>Translation</th><td>{{transcript.Translation.id}}</td>
                                 </tr>
-                                <tr><th colspan="5">{{transcript.Exon.length}} exons</th></tr>
+                                <tr ng-show="transcript.protein">
+                                    <th>Length</th><td>{{transcript.protein.length}} aa</td>
+                                </tr>
+                                <tr><th colspan="2">{{transcript.Exon.length}} exons</th></tr>
                                 <tr ng-repeat="exon in transcript.Exon">
                                     <td>{{exon.id}}</td>
                                     <td>{{exon.start - geneInfo.start}} .. {{exon.end - geneInfo.start}}</td>
                                 </tr>
                             </table>
                         </div>                
+                    </td>
+                    <td >
+                        <table>
+                            <tr ng-repeat="segment in geneInfo.segments">
+                                <td>
+                                    <table style="line-height:10px">
+                                        <tr>
+                                            <td style="width:50px;text-align:right;">{{ ($index*120) + 1 | number }}:</td>
+                                            <td><pre><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
+                                        </tr>
+                                        <tr ng-show="geneInfo.psegments[$index].indexOf('-') > -1">
+                                            <td>&nbsp;</td>
+                                            <td><pre>{{geneInfo.psegments[$index]}}</pre></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
             </table>
