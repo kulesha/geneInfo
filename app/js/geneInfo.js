@@ -66,6 +66,7 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
         // reset the binned sequence
         var s = $scope.geneInfo.sequence.seq.match(/.{1,120}/g);
         $scope.geneInfo.segments = s;
+        $scope.geneInfo.psegments = s;
 
         var exonStart = '<span class="exon">';
         var exonEnd = '</span>';
