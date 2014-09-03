@@ -2,7 +2,23 @@
 <html>
 <head>
 </head>
-<body>
+<body ng-app="geneInfoApp">
     <h1>geneInfo</h1>
+    <form class="form-horizontal" role="form" ng-controller="geneInfoCtrl">
+        <input type="text" name="geneName" class="form-control" ng-model="formInfo.gene"/>    
+        <button type="submit" class="btn btn-success"  ng-click="findGene()">Find</button>
+        
+        <div ng-show="geneInfo.id">
+            <hr/>
+            <p><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em> </p>
+            <em>{{geneInfo.description}}</em>
+            <p>Location: {{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}}</p>
+            <p>Length: {{geneInfo.end - geneInfo.start | number}}bp</p>
+        </div>
+    </form>
+    
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
+    <script src="//code.angularjs.org/1.2.20/angular-sanitize.min.js"></script>
+    <script type="text/javascript" src="/js/geneInfo.js"></script>
 </body>
 </html>
