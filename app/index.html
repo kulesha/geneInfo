@@ -46,16 +46,18 @@
                                 ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}}</a></li>
                         </ul>
                     </td>
-                    <td >
+                    <td>
                         <div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
-                            <h4>{{transcript.id}}</h4>
-                            <em>Translation: {{transcript.Translation.id}}</em><br/>
-                            <em>CDNA:{{transcript.cdna}} </em>
-                            <em>Protein:{{transcript.protein}}</em>
-                            <em>{{transcript.Exon.length}} exons</em>
-                            <div ng-repeat="exon in transcript.Exon">
-                                <p style="padding-left:20px">{{exon.id}} *  <em class="pull-right"> {{exon.start - geneInfo.start}} .. {{exon.end - geneInfo.start}}</em></p>
-                            </div>
+                            <table class="table table-condensed table-strip">
+                                <tr>
+                                    <th>Translation</th><td colspan="4">{{transcript.Translation.id}}</td>
+                                </tr>
+                                <tr><th colspan="5">{{transcript.Exon.length}} exons</th></tr>
+                                <tr ng-repeat="exon in transcript.Exon">
+                                    <td>{{exon.id}}</td>
+                                    <td>{{exon.start - geneInfo.start}} .. {{exon.end - geneInfo.start}}</td>
+                                </tr>
+                            </table>
                         </div>                
                     </td>
                 </tr>
