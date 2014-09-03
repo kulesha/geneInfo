@@ -1,21 +1,64 @@
 <!doctype html>
 <html>
 <head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
 </head>
 <body ng-app="geneInfoApp">
     <h1>geneInfo</h1>
-    <form class="form-horizontal" role="form" ng-controller="geneInfoCtrl">
-        <input type="text" name="geneName" class="form-control" ng-model="formInfo.gene"/>    
-        <button type="submit" class="btn btn-success"  ng-click="findGene()">Find</button>
-        
-        <div ng-show="geneInfo.id">
-            <hr/>
+    <div ng-controller="geneInfoCtrl as gi">
+        <form>
+            <div class="row">
+                <div class="col-xs-2">
+                    <div class="input-group">
+                        <input type="text" name="geneName" class="form-control" placeholder="Enter gene name" ng-model="formInfo.gene"/>    
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-success" ng-click="gi.findGene()">Find</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </form>
+        <div ng-show="geneInfo.id" ng-controller="TabController as tab">            
+            <table class="table">
+                <tr>
+                    <td>
             <p><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em> </p>
             <em>{{geneInfo.description}}</em>
             <p>Location: {{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}}</p>
             <p>Length: {{geneInfo.end - geneInfo.start | number}}bp</p>
+                    </td>
+                </tr>
+                <tr><td>
+            <table class="table table-strip"  >
+                <tr>
+                    <td  style="vertical-align:text-top;">
+                        <ul ng-repeat="transcript in geneInfo.Transcript" class="nav nav-pills">
+                            <li><a ng-click="tab.setTab(transcript.id)" href>{{transcript.id}}</a></li>
+                        </ul>
+                    </td>
+                    <td ng-repeat="transcript in geneInfo.Transcript">
+                        <div ng-show="tab.isSet(transcript.id)">
+                            <h4>{{transcript.id}}</h4>
+                            <em>Translation: {{transcript.Translation.id}}</em><br/>
+                            <em>CDNA:{{transcript.cdna}} </em>
+                            <em>Protein:{{transcript.protein}}</em>
+                            <em>{{transcript.Exon.length}} exons</em>
+                            <div ng-repeat="exon in transcript.Exon">
+                                <p style="padding-left:20px">{{exon.id}} *  <em class="pull-right"> {{exon.start - geneInfo.start}} .. {{exon.end - geneInfo.start}}</em></p>
+                            </div>
+                        </div>                
+                    </td>
+                </tr>
+            </table>
+                </td>
+                    </tr>
+                </table>
         </div>
-    </form>
+    </div>
     
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
     <script src="//code.angularjs.org/1.2.20/angular-sanitize.min.js"></script>
