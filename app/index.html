@@ -36,16 +36,18 @@
                     <th>Length</th><td> {{geneInfo.end - geneInfo.start | number}}bp</td>
                 </tr>
             </table>
-
+            
             <table class="table table-strip"  >
+                <tr><th colspan="10">{{geneInfo.display_name}} transcripts</th></tr>
                 <tr>
-                    <td  style="vertical-align:text-top;">
-                        <ul ng-repeat="transcript in geneInfo.Transcript" class="nav nav-pills">
-                            <li><a ng-click="tab.setTab(transcript.id)" href>{{transcript.id}}</a></li>
+                    <td  style="vertical-align:text-top; width:100px">
+                        <ul class="nav nav-pills nav-stacked">
+                            <li ng-repeat="transcript in geneInfo.Transcript" ng-class="{active:tab.isSet(transcript.id)}"
+                                ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}}</a></li>
                         </ul>
                     </td>
-                    <td ng-repeat="transcript in geneInfo.Transcript">
-                        <div ng-show="tab.isSet(transcript.id)">
+                    <td >
+                        <div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
                             <h4>{{transcript.id}}</h4>
                             <em>Translation: {{transcript.Translation.id}}</em><br/>
                             <em>CDNA:{{transcript.cdna}} </em>

@@ -1,3 +1,12 @@
+// function to add C character Len times
+function repeat(c, len) {   
+    for (var e = ''; e.length < len;)
+        e += c;
+    console.log("repeat " + c + " " + len);
+    console.log(e);
+    return e;
+}
+
 // Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
 var myApp = angular.module('geneInfoApp', ['ngSanitize']);
 
@@ -26,6 +35,11 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce', function ($scope, $
                 var s = seq.seq.match(/.{1,120}/g);
                 $scope.geneInfo.sequence = seq;
                 $scope.geneInfo.segments = s;
+                
+                            // by default select the first transcript
+            $scope.currentTab = data.Transcript[0].id;
+
+
             });
                 
         });            
@@ -43,6 +57,7 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
     
         this.setTab = function(newValue){
             this.tab = newValue;
+            $scope.currentTab = newValue;
             
             var t;            
             for(var i in $scope.geneInfo.Transcript) {
@@ -130,6 +145,7 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
         };
 
         this.isSet = function(tabName){
+            return $scope.currentTab == tabName;
             return this.tab === tabName;
         };
 }]);
