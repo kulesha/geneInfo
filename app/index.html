@@ -18,21 +18,25 @@
                         </span>
                     </div>
                 </div>
-            </div>
-            
-            
+            </div>                    
         </form>
+        <br/>
         <div ng-show="geneInfo.id" ng-controller="TabController as tab">            
             <table class="table">
                 <tr>
-                    <td>
-            <p><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em> </p>
-            <em>{{geneInfo.description}}</em>
-            <p>Location: {{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}}</p>
-            <p>Length: {{geneInfo.end - geneInfo.start | number}}bp</p>
-                    </td>
+                    <th>Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em></td>
                 </tr>
-                <tr><td>
+                <tr>
+                    <th>Description</th><td>{{geneInfo.description}}</td>
+                </tr>
+                <tr>
+                    <th>Location</th><td>{{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}}</td>
+                </tr>
+                <tr>               
+                    <th>Length</th><td> {{geneInfo.end - geneInfo.start | number}}bp</td>
+                </tr>
+            </table>
+
             <table class="table table-strip"  >
                 <tr>
                     <td  style="vertical-align:text-top;">
@@ -54,9 +58,6 @@
                     </td>
                 </tr>
             </table>
-                </td>
-                    </tr>
-                </table>
         </div>
     </div>
     
