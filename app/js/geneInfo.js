@@ -11,7 +11,7 @@ var myApp = angular.module('geneInfoApp', ['ngSanitize']);
 // main controller - it accepts the input gene name and fetches the gene info
 myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce', function ($scope, $http, $sce) {
     // by default we'll look for BRCA2
-    $scope.formInfo = {gene: 'BRCA2'};
+    $scope.formInfo = {gene: 'ARSE'};
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
@@ -29,9 +29,13 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce', function ($scope, $
         $http.get(url).success(function(data){
             // hooray - we have found the gene
             $scope.geneInfo = data;
-            
+            if ($scope.geneInfo.strand === 1) {
+                $scope.geneInfo.strand_str = 'forward';
+            } else {
+                $scope.geneInfo.strand_str = 'reverse';
+            }
             // now let's get the sequence
-            var surl = 'http://rest.ensembl.org/sequence/region/homo_sapiens/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':1?content-type=application/json';
+            var surl = 'http://rest.ensembl.org/sequence/region/homo_sapiens/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
 
             $http.get(surl).success(function(seq){
                 var s = seq.seq.match(/.{1,120}/g);
@@ -70,11 +74,16 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
 
         var exonStart = '<span class="exon">';
         var exonEnd = '</span>';
-            
+
+        var strand = $scope.geneInfo.strand;
+        var gStart = $scope.geneInfo.start;                    
+        var gEnd = $scope.geneInfo.end;
+        
         for(var i in t.Exon) {
-            var s = t.Exon[i].start - $scope.geneInfo.start;
-            var e = t.Exon[i].end - $scope.geneInfo.start + 1;
-                
+            var s = (strand < 0) ? gEnd - t.Exon[i].end : t.Exon[i].start - gStart;
+            var e = (strand < 0) ? gEnd - t.Exon[i].start +1 : t.Exon[i].end - gStart + 1;
+            
+            //console.log(t.Exon[i].id + ' : ' + s + ' ... ' + e);
             var sbin = Math.floor(s / 120);
             var spos = s % 120;
             var ebin = Math.floor(e / 120);
@@ -104,19 +113,21 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
             
                 var cds = 'http://rest.ensembl.org/map/cds/'+t.id+'/1..1000000?content-type=application/json';
                 $http.get(cds).success(function(data){
-                    var pEnd = $scope.geneInfo.start-1;
-                    var gStart = $scope.geneInfo.start;
+                    var pEnd = -1;
                     var pSeq = t.pseq;
-                
                     var pseq = '';
+                    
                     for(var i in data.mappings) {
                         if (data.mappings[i].gap === 0) {
-                            //console.log((data.mappings[i].start - gStart) + '..' + (data.mappings[i].end - gStart));
-                            pseq = pseq + repeat(' ', data.mappings[i].start - pEnd -1);
-                            var len = data.mappings[i].end - data.mappings[i].start+1;
+                            var s = (strand < 0) ? gEnd - data.mappings[i].end : data.mappings[i].start - gStart;
+                            var e = (strand < 0) ? gEnd - data.mappings[i].start : data.mappings[i].end - gStart;
+                            
+                            pseq = pseq + repeat(' ', s - pEnd - 1);
+                            var len = e - s + 1;
+                            
                             pseq = pseq + pSeq.substr(0, len);
                             pSeq = pSeq.substr(len);
-                            pEnd = data.mappings[i].end;
+                            pEnd = e;
                         }                                             
                     }
                  //   console.log(pseq);

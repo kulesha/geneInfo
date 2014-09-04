@@ -31,7 +31,7 @@
                     <th>Description</th><td>{{geneInfo.description}}</td>
                 </tr>
                 <tr>
-                    <th>Location</th><td>{{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}}</td>
+                    <th>Location</th><td>{{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}} <em>{{geneInfo.strand_str}} strand</em></td>
                 </tr>
                 <tr>               
                     <th>Length</th><td> {{geneInfo.end - geneInfo.start | number}}bp</td>
