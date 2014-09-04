@@ -9,13 +9,16 @@ function repeat(c, len) {
 var myApp = angular.module('geneInfoApp', ['ngSanitize']);
 
 // main controller - it accepts the input gene name and fetches the gene info
-myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce', function ($scope, $http, $sce) {
+myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', 
+                                  function ($scope, $http, $sce, $location, $anchorScroll) {
     // by default we'll look for BRCA2
-    $scope.formInfo = {gene: 'ARSE'};
+    $scope.formInfo = {gene: 'BRCA2'};
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
     
+    $scope.currentTag = -1;
+                                      
     var self = this;
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
@@ -51,6 +54,69 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce', function ($scope, $
             });
                 
         });            
+    };
+    
+    this.findBP = function() {        
+        if ($scope.currentTag > -1) {
+            var tmp = $scope.geneInfo.segments[$scope.currentTag];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.segments[$scope.currentTag] = tmp;
+        }
+        var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
+        
+        var pos = ($scope.geneInfo.strand > 0) ? ipos - $scope.geneInfo.start : $scope.geneInfo.end - ipos;
+        
+        var sbin = Math.floor(pos / 120);
+        var spos = pos % 120;
+        
+        var tagStart = '<span class="tag">';
+        var tagEnd = '</span>';
+
+        var tmp = $scope.geneInfo.segments[sbin];
+        var str = tmp.substr(0, spos) + tagStart + tmp.substr(spos, 1) + tagEnd + tmp.substr(spos+1);
+        $scope.geneInfo.segments[sbin] = str;        
+        $scope.currentTag = sbin;
+        
+        $location.hash('a_'+sbin);
+        $anchorScroll();
+    };
+    
+    this.findAA = function(tab) {
+        
+        if ($scope.currentpTag > -1) {
+            var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.psegments[$scope.currentpTag] = tmp;
+        }
+
+        var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
+        
+        var t;
+        for(var i in $scope.geneInfo.Transcript) {
+            if ($scope.geneInfo.Transcript[i].id === tab.currentTab) {
+                t = $scope.geneInfo.Transcript[i];
+            }
+        }
+        
+        if (t && t.Translation) {
+            var tmp = t.pseq;
+
+            var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
+        
+            var sbin = Math.floor(ppos / 120);
+            var spos = ppos % 120;
+            
+            var tagStart = '<span class="tag">';
+            var tagEnd = '</span>';
+    
+            var tmp2 = $scope.geneInfo.psegments[sbin];
+            var str = tmp2.substr(0, spos) + tagStart + tmp2.substr(spos, 1) + tagEnd + tmp2.substr(spos+1);
+            
+            $scope.geneInfo.psegments[sbin] = str;        
+            $scope.currentpTag = sbin;        
+            $location.hash('a_'+sbin);
+            $anchorScroll();            
+        }        
     };
 }]);
 
@@ -133,6 +199,7 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
                             pEnd = e;
                         }                                             
                     }
+                    t.pseq = pseq;
                  //   console.log(pseq);
                     var ps = pseq.match(/.{1,120}/g);
                     $scope.geneInfo.psegments = ps;
@@ -145,5 +212,20 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
     this.isSet = function(tabName){            
         return this.currentTab == tabName;            
     };
+    
+    this.hasTranslation = function() {
+        var t;            
+        
+        for(var i in $scope.geneInfo.Transcript) {
+            if ($scope.geneInfo.Transcript[i].id === this.currentTab) {
+                t = $scope.geneInfo.Transcript[i];
+            }
+        }
+        
+        if (t && t.Translation) {
+            return true;
+        }
+        return false;
+    }
 }]);
 
