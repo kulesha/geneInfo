@@ -10,3 +10,8 @@ a img {
     vertical-align: middle;
     margin-bottom: .2em;
 }
+
+#positionBox {
+    background-color:#f0f8ff; 
+    margin-bottom:20px;padding:5px;
+}

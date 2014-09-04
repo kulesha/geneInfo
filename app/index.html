@@ -3,10 +3,15 @@
 <head>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
     <link rel="stylesheet" type="text/css" href="/css/geneInfo.css">
 
+    <!-- adde to enable sticky goto box -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  
 </head>
-<body ng-app="geneInfoApp">
+<body ng-app="geneInfoApp" data-spy="scroll" data-target="#myScrollspy">
     <h1>geneInfo</h1>
     <div ng-controller="geneInfoCtrl as gi">
         <form>
@@ -38,38 +43,31 @@
                 </tr>
             </table>
             
-            <table class="table table-strip"  >
-                <tr><th colspan="10">{{geneInfo.display_name}} transcripts</th></tr>
-                <tr>
-                    <td  style="vertical-align:text-top; width:100px">
-                        <ul class="nav nav-pills nav-stacked">
-                            <li ng-repeat="transcript in geneInfo.Transcript" ng-class="{active:tab.isSet(transcript.id)}"
+            <div class="row" >
+                <div class="col-xs-2" >
+                    <ul class="nav nav-pills nav-stacked">
+                        <li ng-repeat="transcript in geneInfo.Transcript" ng-class="{active:tab.isSet(transcript.id)}"
                                 ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}}</a></li>
-                        </ul>
-                    </td>
-                    <td>
-                        
-                                <form>
-            <div class="row">
-                <div class="col-xs-4">
-                    <div class="input-group">
-                        <input type="text" name="pos" class="form-control" placeholder="Enter position" ng-model="formInfo.pos"/>    
+                    </ul>                                        
+                </div>
+                
+                <div class="col-xs-2 form-group" id="myScrollspy">                        
+                    
+                    <div class="input-group"  data-spy="affix" data-offset-top="10" id="positionBox">
+                    <form role="form" class="form-horizontal">    
+                        <input type="text" name="pos" class="form-control input-sm" placeholder="Enter position" ng-model="formInfo.pos"/>    
                         <span class="input-group-btn">
                             <button type="submit" class="btn btn-success" ng-click="gi.findBP()">BP</button>
                         </span>
                         <span ng-show="tab.hasTranslation()" class="input-group-btn">
                             <button type="submit" class="btn btn-success" ng-click="gi.findAA(tab)">AA</button>
                         </span>
+                     </form>          
                     </div>
-                </div>
-            </div>                    
-        </form>
-        <br/>
-
-                        
-                        <div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
-                            <table class="table table-condensed table-strip">
-                                <tr ng-show="transcript.protein">
+                     
+                    <div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
+                        <table class="table table-condensed table-strip">
+                            <tr ng-show="transcript.protein">
                                     <th>Translation</th><td>{{transcript.Translation.id}}</td>
                                 </tr>
                                 <tr ng-show="transcript.protein">
@@ -82,9 +80,10 @@
                                     <td ng-show="geneInfo.strand < 0">{{geneInfo.end - exon.end + 1}} .. {{geneInfo.end - exon.start + 1}}</td>
                                 </tr>
                             </table>
-                        </div>                
-                    </td>
-                    <td >
+                    </div>                
+                </div>
+                
+                <div>
                         <table>
                             <tr ng-repeat="segment in geneInfo.segments">
                                 <td>
@@ -101,9 +100,9 @@
                                 </td>
                             </tr>
                         </table>
-                    </td>
-                </tr>
-            </table>
+                                
+                </div>
+              </div>  
         </div>
     </div>
     
