@@ -12,7 +12,8 @@
   
 </head>
 <body ng-app="geneInfoApp" data-spy="scroll" data-target="#myScrollspy">
-    <h1>geneInfo</h1>
+    <a id="top" name="top" href="#"></a>
+    <div class="jumbotron"><h2>geneInfo</h2></div>
     <div ng-controller="geneInfoCtrl as gi">
         <form>
             <div class="row">
@@ -46,6 +47,7 @@
             <div class="row" >
                 <div class="col-xs-2" >
                     <ul class="nav nav-pills nav-stacked">
+                        <em>Choose a transcript</em>
                         <li ng-repeat="transcript in geneInfo.Transcript" ng-class="{active:tab.isSet(transcript.id)}"
                                 ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}}</a></li>
                     </ul>                                        
@@ -62,7 +64,9 @@
                         <span ng-show="tab.hasTranslation()" class="input-group-btn">
                             <button type="submit" class="btn btn-success" ng-click="gi.findAA(tab)">AA</button>
                         </span>
-                     </form>          
+                        <a style="float:right;" href="#" onclick="window.scrollTo(0, 0);">top</a>
+                     </form>   
+                        
                     </div>
                      
                     <div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
