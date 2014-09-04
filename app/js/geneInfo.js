@@ -34,6 +34,9 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce', function ($scope, $
             } else {
                 $scope.geneInfo.strand_str = 'reverse';
             }
+            
+            $scope.geneInfo.url = 'http://www.ensembl.org/Homo_sapiens/Gene/Summary?g=' + data.id;
+            
             // now let's get the sequence
             var surl = 'http://rest.ensembl.org/sequence/region/homo_sapiens/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
 

@@ -1,3 +1,8 @@
 .exon {
     background-color: #ffee99;
 }
+
+a img {
+    vertical-align: middle;
+    margin-bottom: .2em;
+}

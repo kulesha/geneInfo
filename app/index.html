@@ -25,7 +25,7 @@
         <div ng-show="geneInfo.id" ng-controller="TabController as tab">            
             <table class="table">
                 <tr>
-                    <th>Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em></td>
+                    <th>Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em><a href="{{geneInfo.url}}" target="_blank"><img src="/i/e-quest.gif" title="View in Ensembl" /></a></td>
                 </tr>
                 <tr>
                     <th>Description</th><td>{{geneInfo.description}}</td>
