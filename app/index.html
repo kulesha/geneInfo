@@ -34,7 +34,7 @@
                     <th>Location</th><td>{{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}} <em>{{geneInfo.strand_str}} strand</em></td>
                 </tr>
                 <tr>               
-                    <th>Length</th><td> {{geneInfo.end - geneInfo.start | number}}bp</td>
+                    <th>Length</th><td> {{geneInfo.end - geneInfo.start + 1| number}}bp</td>
                 </tr>
             </table>
             
@@ -59,7 +59,8 @@
                                 <tr><th colspan="2">{{transcript.Exon.length}} exons</th></tr>
                                 <tr ng-repeat="exon in transcript.Exon">
                                     <td>{{exon.id}}</td>
-                                    <td>{{exon.start - geneInfo.start}} .. {{exon.end - geneInfo.start}}</td>
+                                    <td ng-show="geneInfo.strand > 0">{{exon.start - geneInfo.start + 1}} .. {{exon.end - geneInfo.start + 1}}</td>
+                                    <td ng-show="geneInfo.strand < 0">{{geneInfo.end - exon.end + 1}} .. {{geneInfo.end - exon.start + 1}}</td>
                                 </tr>
                             </table>
                         </div>                
