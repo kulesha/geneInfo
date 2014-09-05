@@ -12,17 +12,30 @@ var myApp = angular.module('geneInfoApp', ['ngSanitize']);
 myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', 
                                   function ($scope, $http, $sce, $location, $anchorScroll) {
     // by default we'll look for BRCA2
-    $scope.formInfo = {gene: 'BRCA2'};
+    $scope.formInfo = {gene: 'BRCA2', width: 100};
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
     
     $scope.currentTag = -1;
+          
+    $scope.markup = [];
                                       
     var self = this;
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
     
+    $scope.getProtein = function(t) {
+        if (t.Translation) {
+            var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
+            $http.get(purl).success(function(sdata ){
+                console.log(t.id + " * " + sdata.seq.length);
+                t.protein = sdata.seq;
+                t.plen = sdata.seq.length;
+            });
+        }
+    };
+                                      
     // function that will be called on form submit
     this.findGene = function() {
         // first we look for the gene
@@ -44,19 +57,26 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var surl = 'http://rest.ensembl.org/sequence/region/homo_sapiens/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
 
             $http.get(surl).success(function(seq){
-                var s = seq.seq.match(/.{1,120}/g);
+                var w = $scope.formInfo.width;
+                var restr = ".{1,"+w+"}";
+                var re = new RegExp(restr,'g');
+                
+                var s = seq.seq.match(re);
+                
                 $scope.geneInfo.sequence = seq;
                 $scope.geneInfo.segments = s;
-                
-                // don't do it for now - as there are problems fetching sequence
-                // by default select the first transcript
-                // $scope.currentTab = data.Transcript[0].id;
+                                
             });
+            
+            for (var i in data.Transcript) {
+                $scope.getProtein(data.Transcript[i]);                
+            }
                 
         });            
     };
     
     this.findBP = function() {        
+        var w = $scope.formInfo.width;
         if ($scope.currentTag > -1) {
             var tmp = $scope.geneInfo.segments[$scope.currentTag];
             tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
@@ -66,8 +86,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         
         var pos = ($scope.geneInfo.strand > 0) ? ipos - $scope.geneInfo.start : $scope.geneInfo.end - ipos;
         
-        var sbin = Math.floor(pos / 120);
-        var spos = pos % 120;
+        var sbin = Math.floor(pos / w);
+        var spos = pos % w;
         
         var tagStart = '<span class="tag">';
         var tagEnd = '</span>';
@@ -100,11 +120,11 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         
         if (t && t.Translation) {
             var tmp = t.pseq;
-
+            var w = $scope.formInfo.width;
             var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
         
-            var sbin = Math.floor(ppos / 120);
-            var spos = ppos % 120;
+            var sbin = Math.floor(ppos / w);
+            var spos = ppos % w;
             
             var tagStart = '<span class="tag">';
             var tagEnd = '</span>';
@@ -118,6 +138,38 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             $anchorScroll();            
         }        
     };
+                                      
+    this.findSeq = function() {
+        var arr = $.grep($scope.markup, function( e, i ) {
+            return ( e[2] !== 'M');
+        });
+        
+        console.log(arr.length);
+        
+        console.log("mark " + $scope.formInfo.pos);
+        var ostr = $scope.formInfo.pos.toUpperCase();
+        var str = $scope.geneInfo.sequence.seq;
+        
+        var index, startIndex, indices = [];
+        var searchStrLen = ostr.length;
+        while ((index = str.indexOf(ostr, startIndex)) > -1) {
+            var a = Array(index, index + searchStrLen, 'M');
+            indices.push(a);
+            startIndex = index + searchStrLen;
+        }
+        
+        $scope.geneInfo.mark_seq = indices;
+        
+        console.log(indices.length);
+        //console.log(indices);
+        
+        this.markupSequence();
+    };
+
+                                  
+    $scope.markupSequence = function () {
+        console.log('marking ... '+ $scope.geneInfo.mark_seq.length + 'seq');
+    }
 }]);
 
 
@@ -137,7 +189,11 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
             
         
         // reset the binned sequence
-        var s = $scope.geneInfo.sequence.seq.match(/.{1,120}/g);
+        var w = $scope.formInfo.width;
+        var restr = ".{1,"+w+"}";
+        var re = new RegExp(restr,'g');
+                
+        var s = $scope.geneInfo.sequence.seq.match(re);
         $scope.geneInfo.segments = s;
         $scope.geneInfo.psegments = s;
 
@@ -147,16 +203,17 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
         var strand = $scope.geneInfo.strand;
         var gStart = $scope.geneInfo.start;                    
         var gEnd = $scope.geneInfo.end;
+        var indices = [];
         
         for(var i in t.Exon) {
             var s = (strand < 0) ? gEnd - t.Exon[i].end : t.Exon[i].start - gStart;
             var e = (strand < 0) ? gEnd - t.Exon[i].start +1 : t.Exon[i].end - gStart + 1;
-            
+        
             //console.log(t.Exon[i].id + ' : ' + s + ' ... ' + e);
-            var sbin = Math.floor(s / 120);
-            var spos = s % 120;
-            var ebin = Math.floor(e / 120);
-            var epos = e % 120;
+            var sbin = Math.floor(s / w);
+            var spos = s % w;
+            var ebin = Math.floor(e / w);
+            var epos = e % w;
             
             //console.log(s + '['+sbin+':'+spos+']'+' .. ' + e+ '['+ebin+':'+epos+']');
             var segments = $scope.geneInfo.segments;
@@ -173,7 +230,8 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
             var str = tmp.substr(0, epos) + exonEnd + tmp.substr(epos);
             $scope.geneInfo.segments[ebin] = str;    
         }          
-                    
+        
+        
         if (t.Translation) {
             var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
             $http.get(purl).success(function(data){
@@ -201,7 +259,11 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
                     }
                     t.pseq = pseq;
                  //   console.log(pseq);
-                    var ps = pseq.match(/.{1,120}/g);
+                    var w = $scope.formInfo.width;
+                    var restr = ".{1,"+w+"}";
+                    var re = new RegExp(restr,'g');
+        
+                    var ps = pseq.match(re);
                     $scope.geneInfo.psegments = ps;
                 });                    
             });                            

@@ -49,11 +49,32 @@
                     <ul class="nav nav-pills nav-stacked">
                         <em>Choose a transcript</em>
                         <li ng-repeat="transcript in geneInfo.Transcript" ng-class="{active:tab.isSet(transcript.id)}"
-                                ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}} <em ng-show="transcript.Translation">(P)</em></a></li>
+                                ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}} <em ng-show="transcript.Translation">({{transcript.protein.length}} aa)</em></a></li>
                     </ul>                                        
                 </div>
                 
-                <div class="col-xs-2 form-group" id="myScrollspy">                        
+                
+                <div class="col-xs-5">
+                        <table>
+                            <tr ng-repeat="segment in geneInfo.segments">
+                                <td>
+                                    <table style="line-height:10px">
+                                        <tr>
+                                            <td id="a_{{$index}}" style="width:50px;text-align:right;">{{ ($index * formInfo.width) + 1 | number }}:</td>
+                                            <td><pre><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
+                                        </tr>
+                                        <tr ng-show="geneInfo.psegments[$index].indexOf('-') > -1">
+                                            <td>&nbsp;</td>
+                                            <td><pre><span ng-bind-html="geneInfo.psegments[$index]"></span></pre></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                                
+                </div>
+
+                                <div class="col-xs-2 form-group" id="myScrollspy">                        
                     
                     <div class="input-group"  data-spy="affix" data-offset-top="10" id="positionBox">
                     <form role="form" class="form-horizontal">    
@@ -63,13 +84,13 @@
                         </span>
                         <span ng-show="tab.hasTranslation()" class="input-group-btn">
                             <button type="submit" class="btn btn-success" ng-click="gi.findAA(tab)">AA</button>
-                        </span>
+                        </span>                        
                         <a style="float:right;" href="#" onclick="window.scrollTo(0, 0);">top</a>
                      </form>   
                         
                     </div>
                      
-                    <div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
+                    <!--div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
                         <table class="table table-condensed table-strip">
                             <tr ng-show="transcript.protein">
                                     <th>Translation</th><td>{{transcript.Translation.id}}</td>
@@ -84,29 +105,10 @@
                                     <td ng-show="geneInfo.strand < 0">{{geneInfo.end - exon.end + 1}} .. {{geneInfo.end - exon.start + 1}}</td>
                                 </tr>
                             </table>
-                    </div>                
+                    </div-->                
                 </div>
-                
-                <div>
-                        <table>
-                            <tr ng-repeat="segment in geneInfo.segments">
-                                <td>
-                                    <table style="line-height:10px">
-                                        <tr>
-                                            <td id="a_{{$index}}" style="width:50px;text-align:right;">{{ ($index*120) + 1 | number }}:</td>
-                                            <td><pre><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
-                                        </tr>
-                                        <tr ng-show="geneInfo.psegments[$index].indexOf('-') > -1">
-                                            <td>&nbsp;</td>
-                                            <td><pre><span ng-bind-html="geneInfo.psegments[$index]"></span></pre></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                                
-                </div>
-              </div>  
+
+            </div>  
         </div>
     </div>
     
