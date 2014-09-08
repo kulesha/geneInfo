@@ -100,7 +100,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         $location.hash('a_'+sbin);
         $anchorScroll();
     };
-    
+    var ctrl = this;
+                                      
     this.findAA = function(tab) {
         
         if ($scope.currentpTag > -1) {
@@ -136,6 +137,14 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             $scope.currentpTag = sbin;        
             $location.hash('a_'+sbin);
             $anchorScroll();            
+            
+            var gpos = sbin *  w + spos - 1;
+            
+            var tmp3 = $scope.geneInfo.sequence.seq;
+            var str3 = tmp3.substr(gpos, 3);
+            console.log(str3);
+            ctrl.foundSeq = "AA: " + tmp2.substr(spos, 1) + " = " + str3;
+         
         }        
     };
                                       

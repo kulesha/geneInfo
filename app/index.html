@@ -74,7 +74,7 @@
                                 
                 </div>
 
-                                <div class="col-xs-2 form-group" id="myScrollspy">                        
+                <div class="col-xs-1 form-group" id="myScrollspy">                        
                     
                     <div class="input-group"  data-spy="affix" data-offset-top="10" id="positionBox">
                     <form role="form" class="form-horizontal">    
@@ -84,7 +84,8 @@
                         </span>
                         <span ng-show="tab.hasTranslation()" class="input-group-btn">
                             <button type="submit" class="btn btn-success" ng-click="gi.findAA(tab)">AA</button>
-                        </span>                        
+                        </span>    
+                        <span ng-show="gi.foundSeq">{{ gi.foundSeq }}</span>
                         <a style="float:right;" href="#" onclick="window.scrollTo(0, 0);">top</a>
                      </form>   
                         
