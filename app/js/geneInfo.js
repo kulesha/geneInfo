@@ -24,7 +24,14 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     var self = this;
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
-    
+
+    var surl = 'http://rest.ensembl.org/info/species?content-type=application/json;division=ensembl';                                   self.species = 'homo_sapiens';   
+    $http.get(surl).success(function(sdata ){
+        console.log(sdata);
+        self.speciesList = sdata.species;
+    });
+        
+        
     $scope.getProtein = function(t) {
         if (t.Translation) {
             var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
@@ -39,7 +46,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     // function that will be called on form submit
     this.findGene = function() {
         // first we look for the gene
-        var url = 'http://rest.ensembl.org/lookup/symbol/homo_sapiens/' + $scope.formInfo.gene
+        var url = 'http://rest.ensembl.org/lookup/symbol/'+self.species+'/' + $scope.formInfo.gene
                 + '?content-type=application/json;expand=1';
             
         $http.get(url).success(function(data){
@@ -51,12 +58,13 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 $scope.geneInfo.strand_str = 'reverse';
             }
             
-            $scope.geneInfo.url = 'http://www.ensembl.org/Homo_sapiens/Gene/Summary?g=' + data.id;
+            $scope.geneInfo.url = 'http://www.ensembl.org/'+self.species+'/Gene/Summary?g=' + data.id;
             
             // now let's get the sequence
-            var surl = 'http://rest.ensembl.org/sequence/region/homo_sapiens/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
-
+            var surl = 'http://rest.ensembl.org/sequence/region/'+self.species+'/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
             $http.get(surl).success(function(seq){
+                
+                
                 var w = $scope.formInfo.width;
                 var restr = ".{1,"+w+"}";
                 var re = new RegExp(restr,'g');
@@ -65,13 +73,12 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 
                 $scope.geneInfo.sequence = seq;
                 $scope.geneInfo.segments = s;
-                                
             });
             
             for (var i in data.Transcript) {
                 $scope.getProtein(data.Transcript[i]);                
             }
-                
+            
         });            
     };
     
