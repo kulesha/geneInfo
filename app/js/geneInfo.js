@@ -33,6 +33,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         
         
     $scope.getProtein = function(t) {
+        //return;
         if (t.Translation) {
             var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
             $http.get(purl).success(function(sdata ){
@@ -59,6 +60,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
             
             $scope.geneInfo.url = 'http://www.ensembl.org/'+self.species+'/Gene/Summary?g=' + data.id;
+            $scope.loading = true;
             
             // now let's get the sequence
             var surl = 'http://rest.ensembl.org/sequence/region/'+self.species+'/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
@@ -73,6 +75,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 
                 $scope.geneInfo.sequence = seq;
                 $scope.geneInfo.segments = s;
+                $scope.loading = false;  
             });
             
             for (var i in data.Transcript) {
