@@ -15,3 +15,8 @@ a img {
     background-color:#f0f8ff; 
     margin-bottom:20px;padding:5px;
 }
+
+.num {
+    width:50px;
+    text-align:right;
+}

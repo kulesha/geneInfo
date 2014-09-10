@@ -25,9 +25,9 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
                                   
-    var surl = 'http://rest.ensembl.org/info/species?content-type=application/json;division=ensembl';                                   self.species = 'homo_sapiens';   
+    var surl = 'http://rest.ensembl.org/info/species?content-type=application/json;division=ensembl';                                   
+    self.species = 'homo_sapiens';   
     $http.get(surl).success(function(sdata ){
-        console.log(sdata);
         self.speciesList = sdata.species;
     });
         
@@ -38,7 +38,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         if (t.Translation) {
             var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
             $http.get(purl).success(function(sdata ){
-                console.log(t.id + " * " + sdata.seq.length);
                 t.protein = sdata.seq;
                 t.plen = sdata.seq.length;
             });
@@ -125,11 +124,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         
         var tagStart = '<span class="tag">';
         var tagEnd = '</span>';
-        console.log(sbin + '.' + spos);
         var tmp2 = coding ? $scope.geneInfo.csegments[sbin] : $scope.geneInfo.segments[sbin];
-        console.log(tmp2);
         var ppos2 = tmp2.split(/[A-Z]/, spos+1).join('X').length;
-        console.log(ppos2);
         var str = tmp2.substr(0, ppos2) + tagStart + tmp2.substr(ppos2, 1) + tagEnd + tmp2.substr(ppos2+1);
         ctrl.foundSeq = "BP: " + tmp2.substr(ppos2, 1);
         
@@ -322,6 +318,16 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                     
                     var pcs = t.pseq.match(re);
                     $scope.geneInfo.pcsegments = pcs;
+                    $scope.geneInfo.icsegments = [];
+                    var c = 1;
+                    for (var i in pcs) {
+                        var m = pcs[i].split(/[A-Z]/).length - 1;
+                        if (m) {
+                            $scope.geneInfo.icsegments[i] = c;
+                            c = c + m;
+                        }
+                    }
+
                 });
             
                 
@@ -352,6 +358,19 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         
                     var ps = pseq.match(re);
                     $scope.geneInfo.psegments = ps;
+                    $scope.geneInfo.isegments = [];
+                    $scope.geneInfo.esegments = [];
+                    
+                    var c = 1;
+                    for (var i in ps) {
+                        var m = ps[i].split(/[A-Z]/).length - 1;
+                        if (m) {
+                            $scope.geneInfo.isegments[i] = c;
+                            c = c + m;
+                        }
+                        
+//                        console.log(i + "*" + c);
+                    }
                 });                    
             });                            
         }
