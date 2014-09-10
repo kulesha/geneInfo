@@ -31,7 +31,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         self.speciesList = sdata.species;
     });
         
-        
+    var ctrl = this;
+                                      
     $scope.getProtein = function(t) {
         //return;
         if (t.Translation) {
@@ -85,32 +86,65 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         });            
     };
     
-    this.findBP = function() {        
+                                      
+    this.findBP = function(tab) {        
         var w = $scope.formInfo.width;
         if ($scope.currentTag > -1) {
             var tmp = $scope.geneInfo.segments[$scope.currentTag];
             tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
             $scope.geneInfo.segments[$scope.currentTag] = tmp;
         }
-        var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
-        var pos = ($scope.geneInfo.strand > 0) ? ipos - $scope.geneInfo.start : $scope.geneInfo.end - ipos;
+        if ($scope.currentcTag > -1) {
+            var tmp = $scope.geneInfo.csegments[$scope.currentcTag];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.csegments[$scope.currentcTag] = tmp;
+        }
+        
+        
+        var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
+        var coding = $scope.formInfo.coding;
+        var tmp = $scope.geneInfo.sequence.seq;
+        
+        if (coding) {
+            var t;
+            for(var i in $scope.geneInfo.Transcript) {
+                if ($scope.geneInfo.Transcript[i].id === tab.currentTab) {
+                    t = $scope.geneInfo.Transcript[i];
+                }
+            }
+            tmp = t.cdna;
+        }
+        console.log(tmp.substr(0,100));
+        var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;
+        console.log(ppos);
+        var pos = ppos; //($scope.geneInfo.strand > 0) ? ipos - $scope.geneInfo.start : $scope.geneInfo.end - ipos;
         
         var sbin = Math.floor(pos / w);
         var spos = pos % w;
         
         var tagStart = '<span class="tag">';
         var tagEnd = '</span>';
-
-        var tmp = $scope.geneInfo.segments[sbin];
-        var str = tmp.substr(0, spos) + tagStart + tmp.substr(spos, 1) + tagEnd + tmp.substr(spos+1);
-        $scope.geneInfo.segments[sbin] = str;        
-        $scope.currentTag = sbin;
+        console.log(sbin + '.' + spos);
+        var tmp2 = coding ? $scope.geneInfo.csegments[sbin] : $scope.geneInfo.segments[sbin];
+        console.log(tmp2);
+        var ppos2 = tmp2.split(/[A-Z]/, spos+1).join('X').length;
+        console.log(ppos2);
+        var str = tmp2.substr(0, ppos2) + tagStart + tmp2.substr(ppos2, 1) + tagEnd + tmp2.substr(ppos2+1);
+        ctrl.foundSeq = "BP: " + tmp2.substr(ppos2, 1);
         
-        $location.hash('a_'+sbin);
+        if (coding) {
+            $scope.geneInfo.csegments[sbin] = str;        
+            $scope.currentcTag = sbin;
+            $location.hash('b_'+sbin);
+        } else {
+            $scope.geneInfo.segments[sbin] = str;        
+            $scope.currentTag = sbin;
+            $location.hash('a_'+sbin);
+        }
         $anchorScroll();
     };
-    var ctrl = this;
+    
                                       
     this.findAA = function(tab) {
         if ($scope.currentpTag > -1) {
