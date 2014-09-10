@@ -18,13 +18,13 @@
         <form>
             
             <div class="row">
-                <div class="col-xs-2">
-                    <select style="height:30px" ng-options="obj.name as obj.display_name for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
+                <div class="col-xs-3">
+                    <span>Species: </span><select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
                     </select>
                 </div>
                 <div class="col-xs-2">
                     <div class="input-group">
-                        <input type="text" name="geneName" class="form-control" placeholder="Enter gene name" ng-model="formInfo.gene"/>    
+                        <input type="text" id="geneName" name="geneName" class="form-control" placeholder="Enter gene name" ng-model="formInfo.gene"/>    
                         <span class="input-group-btn">
                             <button type="submit" class="btn btn-success" ng-click="gi.findGene()">Find</button>
                         </span>
