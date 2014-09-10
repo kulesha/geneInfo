@@ -65,15 +65,15 @@
                     </div>
                         <table ng-hide="formInfo.coding == true">
                             <tr ng-repeat="segment in geneInfo.segments track by $index">
-                                <td>
+                                <td id="a_{{$index}}">
                                     <table style="line-height:10px">
-                                        <tr>
-                                            <td id="a_{{$index}}" style="width:50px;text-align:right;">{{ ($index * formInfo.width) + 1 | number }}:</td>
-                                            <td><pre><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
-                                        </tr>
                                         <tr ng-show="geneInfo.psegments[$index].indexOf('-') > -1">
                                             <td>&nbsp;</td>
                                             <td><pre><span ng-bind-html="geneInfo.psegments[$index]"></span></pre></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:50px;text-align:right;">{{ ($index * formInfo.width) + 1 | number }}:</td>
+                                            <td><pre><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
                                         </tr>
                                     </table>
                                 </td>
@@ -81,16 +81,16 @@
                         </table>
                         <table ng-show="formInfo.coding == true">
                             <tr ng-repeat="segment in geneInfo.csegments track by $index">
-                                <td>
+                                <td id="b_{{$index}}" >
                                     <table style="line-height:10px">
-                                        <tr>
-                                            <td id="b_{{$index}}" style="width:50px;text-align:right;">{{ ($index * formInfo.width) + 1 | number }}:</td>
-                                            <td><pre><span  class="exon" ng-bind-html="geneInfo.csegments[$index]"></span></pre></td>
-                                        </tr>
                                         <tr ng-show="geneInfo.pcsegments[$index].indexOf('-') > -1">
                                             <td>&nbsp;</td>
                                             <td><pre><span ng-bind-html="geneInfo.pcsegments[$index]"></span></pre></td>
                                         </tr>
+                                        <tr>
+                                            <td style="width:50px;text-align:right;">{{ ($index * formInfo.width) + 1 | number }}:</td>
+                                            <td><pre><span  class="exon" ng-bind-html="geneInfo.csegments[$index]"></span></pre></td>
+                                        </tr>                                        
                                     </table>
                                 </td>
                             </tr>
