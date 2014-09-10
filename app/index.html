@@ -13,9 +13,10 @@
 </head>
 <body ng-app="geneInfoApp" data-spy="scroll" data-target="#myScrollspy">
     <a id="top" name="top" href="#"></a>
-    <div class="jumbotron"><h2>geneInfo</h2></div>
+    <div class="jumbotron"><h2>geneInspector</h2></div>
     <div ng-controller="geneInfoCtrl as gi">
         <form>
+            
             <div class="row">
                 <div class="col-xs-2">
                     <select style="height:30px" ng-options="obj.name as obj.display_name for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
@@ -62,7 +63,7 @@
                     <div ng-show="loading" style="text-align:center">
                         Loading sequence ...
                     </div>
-                        <table>
+                        <table ng-hide="formInfo.coding == true">
                             <tr ng-repeat="segment in geneInfo.segments track by $index">
                                 <td>
                                     <table style="line-height:10px">
@@ -78,11 +79,27 @@
                                 </td>
                             </tr>
                         </table>
-                                
+                        <table ng-show="formInfo.coding == true">
+                            <tr ng-repeat="segment in geneInfo.csegments track by $index">
+                                <td>
+                                    <table style="line-height:10px">
+                                        <tr>
+                                            <td id="b_{{$index}}" style="width:50px;text-align:right;">{{ ($index * formInfo.width) + 1 | number }}:</td>
+                                            <td><pre><span  class="exon" ng-bind-html="geneInfo.csegments[$index]"></span></pre></td>
+                                        </tr>
+                                        <tr ng-show="geneInfo.pcsegments[$index].indexOf('-') > -1">
+                                            <td>&nbsp;</td>
+                                            <td><pre><span ng-bind-html="geneInfo.pcsegments[$index]"></span></pre></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                            
+                    
                 </div>
 
                 <div class="col-xs-1 form-group" id="myScrollspy">                        
-                    
                     <div class="input-group"  data-spy="affix" data-offset-top="0" id="positionBox">
                     <form role="form" class="form-horizontal">    
                         <input type="text" name="pos" class="form-control input-sm" placeholder="Enter position" ng-model="formInfo.pos"/>    
@@ -94,28 +111,13 @@
                         </span>    
                         <span ng-show="gi.foundSeq">{{ gi.foundSeq }}</span>
                         <a style="float:right;" href="#" onclick="window.scrollTo(0, 0);">top</a>
-                     </form>   
+                        <span ng-show="tab.hasTranslation()">
+                            <em>Show coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.setTab()" name="coding"/>
+                        </span>
                         
+                     </form>   
                     </div>
-                     
-                    <!--div ng-repeat="transcript in geneInfo.Transcript" ng-show="tab.isSet(transcript.id)">
-                        <table class="table table-condensed table-strip">
-                            <tr ng-show="transcript.protein">
-                                    <th>Translation</th><td>{{transcript.Translation.id}}</td>
-                                </tr>
-                                <tr ng-show="transcript.protein">
-                                    <th>Length</th><td>{{transcript.protein.length}} aa</td>
-                                </tr>
-                                <tr><th colspan="2">{{transcript.Exon.length}} exons</th></tr>
-                                <tr ng-repeat="exon in transcript.Exon">
-                                    <td>{{exon.id}}</td>
-                                    <td ng-show="geneInfo.strand > 0">{{exon.start - geneInfo.start + 1}} .. {{exon.end - geneInfo.start + 1}}</td>
-                                    <td ng-show="geneInfo.strand < 0">{{geneInfo.end - exon.end + 1}} .. {{geneInfo.end - exon.start + 1}}</td>
-                                </tr>
-                            </table>
-                    </div-->                
                 </div>
-
             </div>  
         </div>
     </div>

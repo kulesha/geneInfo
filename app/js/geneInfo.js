@@ -12,7 +12,7 @@ var myApp = angular.module('geneInfoApp', ['ngSanitize']);
 myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', 
                                   function ($scope, $http, $sce, $location, $anchorScroll) {
     // by default we'll look for BRCA2
-    $scope.formInfo = {gene: 'BRCA2', width: 100};
+    $scope.formInfo = {gene: 'BRCA2', width: 100, coding: false};
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
@@ -24,7 +24,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     var self = this;
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
-
+                                  
     var surl = 'http://rest.ensembl.org/info/species?content-type=application/json;division=ensembl';                                   self.species = 'homo_sapiens';   
     $http.get(surl).success(function(sdata ){
         console.log(sdata);
@@ -113,13 +113,18 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     var ctrl = this;
                                       
     this.findAA = function(tab) {
-        
         if ($scope.currentpTag > -1) {
             var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
             tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
             $scope.geneInfo.psegments[$scope.currentpTag] = tmp;
         }
+        if ($scope.currentpcTag > -1) {
+            var tmp = $scope.geneInfo.pcsegments[$scope.currentpcTag];            
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.pcsegments[$scope.currentpcTag] = tmp;
+        }
 
+        
         var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
         var t;
@@ -130,31 +135,38 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         }
         
         if (t && t.Translation) {
-            var tmp = t.pseq;
+            var coding = $scope.formInfo.coding;
+     
+            var tmp = coding ? t.pseq : t.ppseq;
             var w = $scope.formInfo.width;
+            
             var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
-        
             var sbin = Math.floor(ppos / w);
             var spos = ppos % w;
             
             var tagStart = '<span class="tag">';
             var tagEnd = '</span>';
     
-            var tmp2 = $scope.geneInfo.psegments[sbin];
+            var tmp2 = coding ? $scope.geneInfo.pcsegments[sbin] : $scope.geneInfo.psegments[sbin];
             var str = tmp2.substr(0, spos) + tagStart + tmp2.substr(spos, 1) + tagEnd + tmp2.substr(spos+1);
             
-            $scope.geneInfo.psegments[sbin] = str;        
-            $scope.currentpTag = sbin;        
-            $location.hash('a_'+sbin);
+            if (coding) {
+                $scope.geneInfo.pcsegments[sbin] = str;
+                $scope.currentpcTag = sbin;        
+                $location.hash('b_'+sbin);
+            } else {
+                $scope.geneInfo.psegments[sbin] = str;
+                $scope.currentpTag = sbin;   
+                $location.hash('a_'+sbin);            
+            }
             $anchorScroll();            
             
             var gpos = sbin *  w + spos - 1;
             
-            var tmp3 = $scope.geneInfo.sequence.seq;
+            var tmp3 = coding ? t.cdna : $scope.geneInfo.sequence.seq;
             var str3 = tmp3.substr(gpos, 3);
-            console.log(str3);
             ctrl.foundSeq = "AA: " + tmp2.substr(spos, 1) + " = " + str3;
-         
+            
         }        
     };
                                       
@@ -192,23 +204,27 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
 }]);
 
 
-myApp.controller('TabController', ['$scope', '$http', function($scope, $http){    
+myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScroll', 
+                                   function($scope, $http, $location, $anchorScroll){    
     this.currentTab = '-';
     
+    
     this.setTab = function(newValue){
-        this.currentTab = newValue;
+        if (newValue) {
+            this.currentTab = newValue;
+        } 
         
         // find the selected transcript
         var t;            
         for(var i in $scope.geneInfo.Transcript) {
-            if ($scope.geneInfo.Transcript[i].id === newValue) {
+            if ($scope.geneInfo.Transcript[i].id === this.currentTab) {
                 t = $scope.geneInfo.Transcript[i];
             }
         }
-            
-        
+                    
         // reset the binned sequence
         var w = $scope.formInfo.width;
+        
         var restr = ".{1,"+w+"}";
         var re = new RegExp(restr,'g');
                 
@@ -253,11 +269,29 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
         
         if (t.Translation) {
             var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
+            
+            
             $http.get(purl).success(function(data){
                 t.protein = data.seq;
                 t.pseq = '-' + data.seq.split('').join('--') + '-';
             
-                var cds = 'http://rest.ensembl.org/map/cds/'+t.id+'/1..1000000?content-type=application/json';
+                var curl = 'http://rest.ensembl.org/sequence/id/'+t.id+'?content-type=application/json;type=cds';
+            
+                $http.get(curl).success(function(data){
+                    t.cdna = data.seq;
+                    var w = $scope.formInfo.width;
+                    var restr = ".{1,"+w+"}";
+                    var re = new RegExp(restr,'g');
+        
+                    var ps = data.seq.match(re);
+                    $scope.geneInfo.csegments = ps;
+                    
+                    var pcs = t.pseq.match(re);
+                    $scope.geneInfo.pcsegments = pcs;
+                });
+            
+                
+                var cds = 'http://rest.ensembl.org/map/cds/'+t.id+'/1..3000000?content-type=application/json';
                 $http.get(cds).success(function(data){
                     var pEnd = -1;
                     var pSeq = t.pseq;
@@ -276,7 +310,7 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
                             pEnd = e;
                         }                                             
                     }
-                    t.pseq = pseq;
+                    t.ppseq = pseq;
                  //   console.log(pseq);
                     var w = $scope.formInfo.width;
                     var restr = ".{1,"+w+"}";
@@ -287,7 +321,14 @@ myApp.controller('TabController', ['$scope', '$http', function($scope, $http){
                 });                    
             });                            
         }
-
+        var coding = $scope.formInfo.coding;
+        if (coding) {
+                $location.hash('b_0');
+        } else {
+            $location.hash('a_0');            
+        }
+        $anchorScroll();        
+        
     };
 
     this.isSet = function(tabName){            
