@@ -114,9 +114,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
             tmp = t.cdna;
         }
-        console.log(tmp.substr(0,100));
         var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;
-        console.log(ppos);
         var pos = ppos; //($scope.geneInfo.strand > 0) ? ipos - $scope.geneInfo.start : $scope.geneInfo.end - ipos;
         
         var sbin = Math.floor(pos / w);
@@ -171,9 +169,16 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var w = $scope.formInfo.width;
             
             var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
+            console.log(ppos);
+            var pposA = tmp.split(/\-/, ipos*2-1).join('X').length;          
+            var pposB = tmp.split(/\-/, ipos*2).join('X').length;          
+            console.log(pposA + ' .. ' + pposB);
+            var gpos = [pposA, ppos, pposB];
+            
             var sbin = Math.floor(ppos / w);
             var spos = ppos % w;
             
+            console.log(sbin + " . " + spos);
             var tagStart = '<span class="tag">';
             var tagEnd = '</span>';
     
@@ -191,11 +196,28 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
             $anchorScroll();            
             
-            var gpos = sbin *  w + spos - 1;
-            
+            console.log(gpos);
             var tmp3 = coding ? t.cdna : $scope.geneInfo.sequence.seq;
-            var str3 = tmp3.substr(gpos, 3);
+            
+            
+            var str3 = tmp3.substr(gpos[0], 1) + tmp3.substr(gpos[1], 1) + tmp3.substr(gpos[2], 1);
             ctrl.foundSeq = "AA: " + tmp2.substr(spos, 1) + " = " + str3;
+            for(var i in gpos) {
+                var sbin = Math.floor(gpos[i] / w);
+                var spos = gpos[i] % w;
+        
+                var tmp2 = coding ? $scope.geneInfo.csegments[sbin] : $scope.geneInfo.segments[sbin];
+                var ppos2 = tmp2.split(/[A-Z]/, spos+1).join('X').length;
+                var str = tmp2.substr(0, ppos2) + tagStart + tmp2.substr(ppos2, 1) + tagEnd + tmp2.substr(ppos2+1);
+    
+                if (coding) {
+                    $scope.geneInfo.csegments[sbin] = str;        
+                    $scope.currentcTag = sbin;
+                } else {
+                    $scope.geneInfo.segments[sbin] = str;        
+                    $scope.currentTag = sbin;
+                }
+            }
             
         }        
     };
