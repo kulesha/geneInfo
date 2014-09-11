@@ -45,7 +45,7 @@ var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
 myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', 
                                   function ($scope, $http, $sce, $location, $anchorScroll) {
 
-    
+    $scope.message = '';
     $scope.baseCount = function(str) {
         if(str) {            
             return str.split(/[A-Z]/).length - 1;
@@ -92,7 +92,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         $scope.currentTag = -1;
         $scope.currentpcTag = -1;
         $scope.currentcTag = -1;
-        
+        $scope.message = '';
         // first we look for the gene
         var url = 'http://rest.ensembl.org/lookup/symbol/'+self.species+'/' + $scope.formInfo.gene
                 + '?content-type=application/json;expand=1';
@@ -129,6 +129,10 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 $scope.getProtein(data.Transcript[i]);                
             }
             
+        }).error(function(data, status, header, config){
+            if (status === 400) {
+                $scope.message = data.error;
+            }            
         });            
     };
     

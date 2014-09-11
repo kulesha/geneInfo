@@ -55,6 +55,11 @@
                     </span>
                 </div>
             </div>                
+            <div ng-show="message" style="text-align:center" ng-cloak>
+                <span style="background-color:pink;margin-top:10px;">{{ message }}</span>
+            </div>
+                    
+       
         </form>
       
         <div ng-show="geneInfo.id" ng-controller="TabController as tab" ng-cloak id="data">            
