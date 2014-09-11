@@ -6,14 +6,40 @@
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
     <link rel="stylesheet" type="text/css" href="/css/geneInfo.css">
 
-    <!-- adde to enable sticky goto box -->
+    <!-- added to enable sticky goto box -->
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    
   
 </head>
 <body ng-app="geneInfoApp" data-spy="scroll" data-target="#myScrollspy">
     <a id="top" name="top" href="#"></a>
-    <div class="jumbotron"><h2>geneInspector</h2></div>
+    <div class="jumbotron">        
+        <nav class="navbar navbar-default" role="navigation" ng-controller="menuCtrl as menu">
+            <script type="text/ng-template" id="myModalContent.html">
+                <div class="modal-header">
+                    <h3>{{ items[0] }}</h3>
+                </div>
+                <div class="modal-body" ng-switch on="items[0]">
+                    <p ng-switch-when="Contact">Any enquiries please contact kulesha@gmail.com</p>
+                    <p ng-switch-when="Help">To be written</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" ng-click="ok()">OK</button>            
+                </div>
+            </script>
+            
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">geneInspector</a>
+            </div
+            <div class="pull-right">
+                <ul class="nav navbar-nav pull-right">
+                    <li><a href="#" ng-click="menu.show('Contact')">Contact</a></li>
+                    <li><a href="#" ng-click="menu.show('Help')">Help</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
     <div ng-controller="geneInfoCtrl as gi">
         <form>
             <div class="pull-right">
@@ -120,6 +146,12 @@
     
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
     <script src="//code.angularjs.org/1.2.20/angular-sanitize.min.js"></script>
+ 
     <script type="text/javascript" src="/js/geneInfo.js"></script>
+           <!-- for dialog boxes -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
+
+
 </body>
 </html>

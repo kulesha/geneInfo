@@ -7,7 +7,7 @@ function repeat(c, len) {
 
 
 // Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
-var myApp = angular.module('geneInfoApp', ['ngSanitize']) .filter('baseCount', function() {
+var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filter('baseCount', function() {
         return function(input) { 
             if (input) {
                 return input.split(re).length -1;
@@ -16,6 +16,31 @@ var myApp = angular.module('geneInfoApp', ['ngSanitize']) .filter('baseCount', f
         }
     });
     
+myApp.controller('menuCtrl', ['$scope', '$modal', function ($scope, $modal) {
+    var ctrl = this;
+    $scope.items = [];
+
+  this.show = function (topic) {   
+    $scope.items[0] = topic;
+    
+    var modalInstance = $modal.open({
+        templateUrl: 'myModalContent.html',        
+        controller: ModalInstanceCtrl,
+        resolve: {
+            items: function () {
+                return $scope.items;
+            }
+        }
+    });
+  };
+}]);
+
+var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
+    $scope.items = items;
+    $scope.ok = function () {
+        $modalInstance.close();
+    };
+};
 // main controller - it accepts the input gene name and fetches the gene info
 myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', 
                                   function ($scope, $http, $sce, $location, $anchorScroll) {
