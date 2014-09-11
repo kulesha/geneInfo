@@ -19,4 +19,10 @@ a img {
 .num {
     width:50px;
     text-align:right;
+    padding-left:5xp;
+    padding-right:5px;
+    font-size:80%;
+}
+.warn {
+    background-color:#ffeeee;
 }

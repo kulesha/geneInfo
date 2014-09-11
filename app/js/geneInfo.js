@@ -5,12 +5,29 @@ function repeat(c, len) {
     return e;
 }
 
-// Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
-var myApp = angular.module('geneInfoApp', ['ngSanitize']);
 
+// Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
+var myApp = angular.module('geneInfoApp', ['ngSanitize']) .filter('baseCount', function() {
+        return function(input) { 
+            if (input) {
+                return input.split(re).length -1;
+            }
+            return 0;
+        }
+    });
+    
 // main controller - it accepts the input gene name and fetches the gene info
 myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', 
                                   function ($scope, $http, $sce, $location, $anchorScroll) {
+
+    
+    $scope.baseCount = function(str) {
+        if(str) {            
+            return str.split(/[A-Z]/).length - 1;
+        }
+        return 1;
+    };
+                                      
     // by default we'll look for BRCA2
     $scope.formInfo = {gene: 'BRCA2', width: 100, coding: false};
     
@@ -114,6 +131,12 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
             tmp = t.cdna;
         }
+        
+        if (ipos > tmp.length) {
+                ctrl.foundSeq = 'Length is only ' + tmp.length + ' bp';
+                return;
+        }
+            
         var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;
         var pos = ppos; //($scope.geneInfo.strand > 0) ? ipos - $scope.geneInfo.start : $scope.geneInfo.end - ipos;
         
@@ -125,7 +148,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         var tmp2 = coding ? $scope.geneInfo.csegments[sbin] : $scope.geneInfo.segments[sbin];
         var ppos2 = tmp2.split(/[A-Z]/, spos+1).join('X').length;
         var str = tmp2.substr(0, ppos2) + tagStart + tmp2.substr(ppos2, 1) + tagEnd + tmp2.substr(ppos2+1);
-        ctrl.foundSeq = "BP: " + tmp2.substr(ppos2, 1);
+        ctrl.foundSeq = "Found bp: " + tmp2.substr(ppos2, 1);
         
         if (coding) {
             $scope.geneInfo.csegments[sbin] = str;        
@@ -155,6 +178,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         
         var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
+        //console.log(ipos);
+        
         var t;
         for(var i in $scope.geneInfo.Transcript) {
             if ($scope.geneInfo.Transcript[i].id === tab.currentTab) {
@@ -166,6 +191,12 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var coding = $scope.formInfo.coding;
      
             var tmp = coding ? t.pseq : t.ppseq;
+            
+            if (ipos > t.plen) {
+                ctrl.foundSeq = 'Length is only ' + t.plen + ' aa';
+                return;
+            }
+            
             var w = $scope.formInfo.width;
             
             var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
@@ -196,12 +227,9 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
             $anchorScroll();            
             
-            console.log(gpos);
             var tmp3 = coding ? t.cdna : $scope.geneInfo.sequence.seq;
-            
-            
             var str3 = tmp3.substr(gpos[0], 1) + tmp3.substr(gpos[1], 1) + tmp3.substr(gpos[2], 1);
-            ctrl.foundSeq = "AA: " + tmp2.substr(spos, 1) + " = " + str3;
+            ctrl.foundSeq = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3;
             for(var i in gpos) {
                 var sbin = Math.floor(gpos[i] / w);
                 var spos = gpos[i] % w;

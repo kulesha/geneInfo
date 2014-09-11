@@ -68,12 +68,14 @@
                                 <td id="a_{{$index}}">
                                     <table style="line-height:10px">
                                         <tr ng-show="geneInfo.psegments[$index].indexOf('-') > -1">
-                                            <td class="num">{{geneInfo.isegments[$index]}}:</td>
+                                            <td class="num">{{geneInfo.isegments[$index]}}</td>
                                             <td><pre><span ng-bind-html="geneInfo.psegments[$index]"></span></pre></td>
+                                            <td class="num">{{ geneInfo.isegments[$index] + baseCount(geneInfo.psegments[$index]) -1 }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="num">{{ ($index * formInfo.width) + 1 | number }}:</td>
+                                            <td class="num">{{ ($index * formInfo.width) + 1 | number }}</td>
                                             <td><pre><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
+                                            <td class="num">{{ ($index * formInfo.width) + geneInfo.segments[$index].length | number }}</td>
                                         </tr>
                                     </table>
                                 </td>
@@ -86,10 +88,12 @@
                                         <tr ng-show="geneInfo.pcsegments[$index].indexOf('-') > -1">
                                             <td class="num">{{geneInfo.icsegments[$index]}}:</td>
                                             <td><pre><span ng-bind-html="geneInfo.pcsegments[$index]"></span></pre></td>
+                                            <td class="num">{{ geneInfo.icsegments[$index] + baseCount(geneInfo.pcsegments[$index]) -1 }}</td>
                                         </tr>
                                         <tr>
                                             <td class="num">{{ ($index * formInfo.width) + 1 | number }}:</td>
                                             <td><pre><span  class="exon" ng-bind-html="geneInfo.csegments[$index]"></span></pre></td>
+                                            <td class="num">{{ ($index * formInfo.width) + geneInfo.segments[$index].length | number }}</td>
                                         </tr>                                        
                                     </table>
                                 </td>
@@ -104,12 +108,12 @@
                     <form role="form" class="form-horizontal">    
                         <input type="text" name="pos" class="form-control input-sm" placeholder="Enter position" ng-model="formInfo.pos"/>    
                         <span class="input-group-btn">
-                            <button type="submit" class="btn btn-success" ng-click="gi.findBP(tab)">BP</button>
+                            <button type="submit" class="btn btn-success" ng-click="gi.findBP(tab)">bp</button>
                         </span>
                         <span ng-show="tab.hasTranslation()" class="input-group-btn">
-                            <button type="submit" class="btn btn-success" ng-click="gi.findAA(tab)">AA</button>
+                            <button type="submit" class="btn btn-success" ng-click="gi.findAA(tab)">aa</button>
                         </span>    
-                        <span ng-show="gi.foundSeq">{{ gi.foundSeq }}</span>
+                        <span class="warn" ng-show="gi.foundSeq">{{ gi.foundSeq }}</span>
                         <a style="float:right;" href="#" onclick="window.scrollTo(0, 0);">top</a>
                         <span ng-show="tab.hasTranslation()">
                             <em>Show coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.setTab()" name="coding"/>
