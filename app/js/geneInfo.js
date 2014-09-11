@@ -88,6 +88,11 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     // function that will be called on form submit
     this.findGene = function() {
+        $scope.currentpTag = -1;
+        $scope.currentTag = -1;
+        $scope.currentpcTag = -1;
+        $scope.currentcTag = -1;
+        
         // first we look for the gene
         var url = 'http://rest.ensembl.org/lookup/symbol/'+self.species+'/' + $scope.formInfo.gene
                 + '?content-type=application/json;expand=1';
@@ -189,6 +194,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
                                       
     this.findAA = function(tab) {
+        console.log($scope.currentpTag);
         if ($scope.currentpTag > -1) {
             var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
             tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
@@ -225,16 +231,12 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var w = $scope.formInfo.width;
             
             var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
-            console.log(ppos);
             var pposA = tmp.split(/\-/, ipos*2-1).join('X').length;          
             var pposB = tmp.split(/\-/, ipos*2).join('X').length;          
-            console.log(pposA + ' .. ' + pposB);
             var gpos = [pposA, ppos, pposB];
             
             var sbin = Math.floor(ppos / w);
             var spos = ppos % w;
-            
-            console.log(sbin + " . " + spos);
             var tagStart = '<span class="tag">';
             var tagEnd = '</span>';
     
@@ -273,16 +275,13 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
             
         }        
+          console.log("B:" + $scope.currentpTag);
     };
                                       
     this.findSeq = function() {
         var arr = $.grep($scope.markup, function( e, i ) {
             return ( e[2] !== 'M');
         });
-        
-        console.log(arr.length);
-        
-        console.log("mark " + $scope.formInfo.pos);
         var ostr = $scope.formInfo.pos.toUpperCase();
         var str = $scope.geneInfo.sequence.seq;
         
@@ -295,10 +294,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         }
         
         $scope.geneInfo.mark_seq = indices;
-        
-        console.log(indices.length);
-        //console.log(indices);
-        
         this.markupSequence();
     };
 
@@ -317,8 +312,13 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     this.setTab = function(newValue){
         if (newValue) {
             this.currentTab = newValue;
+            $scope.currentpTag = -1;
+            $scope.currentTag = -1;
+            $scope.currentpcTag = -1;
+            $scope.currentcTag = -1;
         } 
-        
+            
+        //console.log($scope.currentpTag);
         // find the selected transcript
         var t;            
         for(var i in $scope.geneInfo.Transcript) {
