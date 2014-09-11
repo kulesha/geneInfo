@@ -198,7 +198,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
                                       
     this.findAA = function(tab) {
-        console.log($scope.currentpTag);
         if ($scope.currentpTag > -1) {
             var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
             tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
@@ -279,7 +278,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
             
         }        
-          console.log("B:" + $scope.currentpTag);
     };
                                       
     this.findSeq = function() {
