@@ -42,7 +42,7 @@
     </div>
     <div ng-controller="geneInfoCtrl as gi">
         <form>
-            <div class="pull-right">
+            <div class="pull-right" style="margin-right:20px">
                 <span>Species: </span>
                 <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
                 </select>
