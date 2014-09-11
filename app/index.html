@@ -33,7 +33,7 @@
             </div>                    
         </form>
         <br/>
-        <div ng-show="geneInfo.id" ng-controller="TabController as tab">            
+        <div ng-show="geneInfo.id" ng-controller="TabController as tab" ng-cloak>            
             <table class="table table-condensed table-striped">
                 <tr>
                     <th>Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em><a href="{{geneInfo.url}}" target="_blank"><img src="/i/e-quest.gif" title="View in Ensembl" /></a></td>
