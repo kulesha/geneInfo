@@ -74,7 +74,7 @@
                                 <tr>
                                     <td class="num">{{ ($index * formInfo.width) + 1 | number }}</td>
                                     <td><pre><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
-                                    <td class="num">{{ ($index * formInfo.width) + geneInfo.segments[$index].length | number }}</td>
+                                    <td class="num">{{ ($index * formInfo.width) + baseCount(geneInfo.segments[$index]) | number }}</td>
                                 </tr>
                             </table>
                         </div>
@@ -90,7 +90,7 @@
                                 <tr>
                                     <td class="num">{{ ($index * formInfo.width) + 1 | number }}:</td>
                                     <td><pre><span  class="exon" ng-bind-html="geneInfo.csegments[$index]"></span></pre></td>
-                                    <td class="num">{{ ($index * formInfo.width) + geneInfo.segments[$index].length | number }}</td>
+                                    <td class="num">{{ ($index * formInfo.width) + baseCount(geneInfo.segments[$index]) | number }}</td>
                                 </tr>                                        
                             </table>
                         </div>
