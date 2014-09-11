@@ -17,8 +17,8 @@
     <div ng-controller="geneInfoCtrl as gi">
         <form>
             
-            <div class="row">
-                <div class="col-xs-3">
+            
+                <div class="pull-right">
                     <span>Species: </span><select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
                     </select>
                 </div>
@@ -30,7 +30,7 @@
                         </span>
                     </div>
                 </div>
-            </div>                    
+        
         </form>
         <br/>
         <div ng-show="geneInfo.id" ng-controller="TabController as tab" ng-cloak>            
