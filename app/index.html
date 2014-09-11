@@ -16,24 +16,22 @@
     <div class="jumbotron"><h2>geneInspector</h2></div>
     <div ng-controller="geneInfoCtrl as gi">
         <form>
-            
-            
-                <div class="pull-right">
-                    <span>Species: </span><select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
-                    </select>
+            <div class="pull-right">
+                <span>Species: </span>
+                <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
+                </select>
+            </div>
+            <div class="col-xs-2">
+                <div class="input-group">
+                    <input type="text" id="geneName" name="geneName" class="form-control" placeholder="Enter gene name" ng-model="formInfo.gene"/>    
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-success" ng-click="gi.findGene()">Find</button>
+                    </span>
                 </div>
-                <div class="col-xs-2">
-                    <div class="input-group">
-                        <input type="text" id="geneName" name="geneName" class="form-control" placeholder="Enter gene name" ng-model="formInfo.gene"/>    
-                        <span class="input-group-btn">
-                            <button type="submit" class="btn btn-success" ng-click="gi.findGene()">Find</button>
-                        </span>
-                    </div>
-                </div>
-        
+            </div>                
         </form>
-        <br/>
-        <div ng-show="geneInfo.id" ng-controller="TabController as tab" ng-cloak>            
+      
+        <div ng-show="geneInfo.id" ng-controller="TabController as tab" ng-cloak id="data">            
             <table class="table table-condensed table-striped">
                 <tr>
                     <th>Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em><a href="{{geneInfo.url}}" target="_blank"><img src="/i/e-quest.gif" title="View in Ensembl" /></a></td>
