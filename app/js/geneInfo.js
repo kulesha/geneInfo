@@ -354,9 +354,10 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     this.untrack = function() {
         $("#location").hide();
     };
-    this.track = function(event, row) {
-        console.log(row + ' : ' + event.offsetX );
-        $scope.location = row * $scope.formInfo.width + Math.floor(event.offsetX / $scope.fontWidth);
+    this.track = function(event, row, atype) {
+        //console.log(row + ' : ' + event.offsetX );
+        var pos = row * $scope.formInfo.width + Math.floor(event.offsetX / $scope.fontWidth);
+        $scope.location = pos + " " +atype;
         $("#location").css({top: event.clientY + 10, left: event.clientX + 20}).show();
     };
     
