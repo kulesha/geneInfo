@@ -5,6 +5,31 @@ function repeat(c, len) {
     return e;
 }
 
+function getTextWidth(text, font) {
+    // re-use canvas object for better performance
+    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+    var context = canvas.getContext("2d");
+    context.font = font;
+    var metrics = context.measureText(text);
+    return metrics.width;
+};
+
+function elementCurrentStyle(element, styleName){
+    if (element.currentStyle){
+        var i = 0, temp = "", changeCase = false;
+        for (i = 0; i < styleName.length; i++)
+            if (styleName[i] != '-'){
+                temp += (changeCase ? styleName[i].toUpperCase() : styleName[i]);
+                changeCase = false;
+            } else {
+                changeCase = true;
+            }
+        styleName = temp;
+        return element.currentStyle[styleName];
+    } else {
+        return getComputedStyle(element, null).getPropertyValue(styleName);
+    }
+}
 
 // Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
 var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filter('baseCount', function() {
@@ -19,8 +44,7 @@ var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filte
 myApp.controller('menuCtrl', ['$scope', '$modal', function ($scope, $modal) {
     var ctrl = this;
     $scope.items = [];
-
-  this.show = function (topic) {   
+    this.show = function (topic) {   
     $scope.items[0] = topic;
     
     var modalInstance = $modal.open({
@@ -46,6 +70,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                   function ($scope, $http, $sce, $location, $anchorScroll) {
 
     $scope.message = '';
+    $scope.location = 0;
+                                      
     $scope.baseCount = function(str) {
         if(str) {            
             return str.split(/[A-Z]/).length - 1;
@@ -62,6 +88,17 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     $scope.currentTag = -1;
           
     $scope.markup = [];
+    
+//    $scope.fontWidth = getTextWidth("ATGC", "normal 13pt Menlo") / 4;
+
+    var el = document.getElementById('tmp');
+    console.log(el); 
+    
+    var font = elementCurrentStyle(el,"font-weight") + " " + elementCurrentStyle(el,"font-size") + " " + elementCurrentStyle(el,"font-family");
+    console.log(font);
+    console.log(getTextWidth("ATGC", font) / 4);                                  
+    $scope.fontWidth = getTextWidth("ATGC", "normal 13px Consolas") / 4;
+    console.log($scope.fontWidth);
                                       
     var self = this;
     
@@ -309,7 +346,19 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
 myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScroll', 
                                    function($scope, $http, $location, $anchorScroll){    
     this.currentTab = '-';
+    $scope.location = 0;
+    this.click = function(event, row) {
+        console.log(row + ' : ' + event.offsetX);
+    };
     
+    this.untrack = function() {
+        $("#location").hide();
+    };
+    this.track = function(event, row) {
+        console.log(row + ' : ' + event.offsetX );
+        $scope.location = row * $scope.formInfo.width + Math.floor(event.offsetX / $scope.fontWidth);
+        $("#location").css({top: event.clientY + 10, left: event.clientX + 20}).show();
+    };
     
     this.setTab = function(newValue){
         if (newValue) {
