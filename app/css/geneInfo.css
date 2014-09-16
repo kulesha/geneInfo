@@ -49,3 +49,7 @@ pre {
     padding-top:60px;
     
 }
+
+.col-fixed {
+    width:300px;
+}
