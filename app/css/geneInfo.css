@@ -53,3 +53,10 @@ pre {
 .col-fixed {
     width:300px;
 }
+
+.jumbotron {
+    padding: 1em;
+    padding-bottom:0.5em;
+    
+    2margin-bottom:1em;
+}
