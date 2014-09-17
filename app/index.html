@@ -29,15 +29,13 @@
                 </div>
             </script>
             
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#">geneInspector ( demo )</a>
-            </div
-            <div class="pull-right">
-                <ul class="nav navbar-nav pull-right">
-                    <li><a href="#" ng-click="menu.show('Contact')">Contact</a></li>
-                    <li><a href="#" ng-click="menu.show('Help')">Help</a></li>
-                </ul>
-            </div>
+            
+            <a class="navbar-brand" href="#">geneInspector ( demo )</a>
+            
+            <ul class="nav navbar-nav pull-right">
+                <li><a href="#" ng-click="menu.show('Contact')">Contact</a></li>
+                <li><a href="#" ng-click="menu.show('Help')">Help</a></li>
+            </ul>            
         </nav>
     </div>
     <div style="display:none;visibility:hidden"><pre id="tmp">ATGC : {{ fontWidth }}</pre> : </div> 
@@ -87,7 +85,7 @@
                     <td>
                         <ul class="nav nav-pills">
                 
-                        <li ng-repeat="transcript in geneInfo.Transcript" ng-class="{active:tab.isSet(transcript.id)}"
+                        <li ng-repeat="transcript in geneInfo.Transcript | orderBy:id" ng-class="{active:tab.isSet(transcript.id)}"
                                 ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}} <em ng-show="transcript.Translation">({{transcript.protein.length}} aa)</em></a></li>
                     </ul>
                     
