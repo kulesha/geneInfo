@@ -116,7 +116,8 @@
                         </table>
                     
                         <div class="warn" ng-show="gi.foundSeq">{{ gi.foundSeq }}</div>
-                        <div ng-show="tab.hasTranslation()">
+                        
+                        <div ng-show="tab.hasCoding()">
                             <em>Coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.setTab()" name="coding"/>
                         </div>
                         
@@ -151,7 +152,8 @@
                     </div>
 
                     <div ng-show="formInfo.coding == true">
-                        <table>
+                        <div ng-hide="tab.hasTranslation()" class="warn">This transcript does not code for any proteins.</div>
+                        <table ng-show="tab.hasTranslation()">
                             <tr class="sequence" id="a_{{$index}}" ng-repeat="segment in geneInfo.csegments track by $index">
                                 <td>
                                     <table class="table-condensed">

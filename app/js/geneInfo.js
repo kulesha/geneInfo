@@ -71,7 +71,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
 
     $scope.message = '';
     $scope.location = 0;
-                                      
+ 
     $scope.baseCount = function(str) {
         if(str) {            
             return str.split(/[A-Z]/).length - 1;
@@ -84,9 +84,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
-    
-    $scope.currentTag = -1;
-          
+              
     $scope.markup = [];
     
 //    $scope.fontWidth = getTextWidth("ATGC", "normal 13pt Menlo") / 4;
@@ -111,6 +109,39 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     });
         
     var ctrl = this;
+    
+    
+    $scope.clearTags = function() {
+        ctrl.foundSeq = '';
+        
+        if ($scope.currentTag > -1) {
+            var tmp = $scope.geneInfo.segments[$scope.currentTag];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.segments[$scope.currentTag] = tmp;
+        }
+        
+        if ($scope.currentcTag > -1) {
+            var tmp = $scope.geneInfo.csegments[$scope.currentcTag];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.csegments[$scope.currentcTag] = tmp;
+        }
+        
+        if ($scope.currentpTag > -1) {
+            var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.psegments[$scope.currentpTag] = tmp;
+        }
+        if ($scope.currentpcTag > -1) {
+            var tmp = $scope.geneInfo.pcsegments[$scope.currentpcTag];            
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.pcsegments[$scope.currentpcTag] = tmp;
+        }
+        
+        $scope.currentpTag = -1;
+        $scope.currentTag = -1;
+        $scope.currentpcTag = -1;
+        $scope.currentcTag = -1;    
+    };
                                       
     $scope.getProtein = function(t) {
         //return;
@@ -125,11 +156,10 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     // function that will be called on form submit
     this.findGene = function() {
-        $scope.currentpTag = -1;
-        $scope.currentTag = -1;
-        $scope.currentpcTag = -1;
-        $scope.currentcTag = -1;
         $scope.message = '';
+        $scope.formInfo.coding = false;
+        $scope.clearTags();
+        
         // first we look for the gene
         var url = 'http://rest.ensembl.org/lookup/symbol/'+self.species+'/' + $scope.formInfo.gene
                 + '?content-type=application/json;expand=1';
@@ -174,20 +204,10 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
     
                                       
-    this.findBP = function(tab) {        
+    this.findBP = function(tab) {
+        $scope.clearTags();
+        
         var w = $scope.formInfo.width;
-        if ($scope.currentTag > -1) {
-            var tmp = $scope.geneInfo.segments[$scope.currentTag];
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.segments[$scope.currentTag] = tmp;
-        }
-        
-        if ($scope.currentcTag > -1) {
-            var tmp = $scope.geneInfo.csegments[$scope.currentcTag];
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.csegments[$scope.currentcTag] = tmp;
-        }
-        
         
         var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         var coding = $scope.formInfo.coding;
@@ -235,18 +255,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
                                       
     this.findAA = function(tab) {
-        if ($scope.currentpTag > -1) {
-            var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.psegments[$scope.currentpTag] = tmp;
-        }
-        if ($scope.currentpcTag > -1) {
-            var tmp = $scope.geneInfo.pcsegments[$scope.currentpcTag];            
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.pcsegments[$scope.currentpcTag] = tmp;
-        }
-
-        
+        $scope.clearTags();
         var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
         //console.log(ipos);
@@ -361,15 +370,13 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         $("#location").css({top: event.clientY + 10, left: event.clientX + 20}).show();
     };
     
+                                       
     this.setTab = function(newValue){
         if (newValue) {
             this.currentTab = newValue;
-            $scope.currentpTag = -1;
-            $scope.currentTag = -1;
-            $scope.currentpcTag = -1;
-            $scope.currentcTag = -1;
+            $scope.clearTags();
         } 
-            
+           
         //console.log($scope.currentpTag);
         // find the selected transcript
         var t;            
@@ -515,6 +522,21 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         return this.currentTab == tabName;            
     };
     
+    this.hasCoding = function() {
+        var t;            
+        
+        for(var i in $scope.geneInfo.Transcript) {
+            if ($scope.geneInfo.Transcript[i].id === this.currentTab) {
+                t = $scope.geneInfo.Transcript[i];
+            }
+        }
+        
+        if (t) {
+            return true;
+        }
+        return false;
+    }                                       
+                                       
     this.hasTranslation = function() {
         var t;            
         
