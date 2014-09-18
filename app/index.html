@@ -42,12 +42,8 @@
     <div style="display:none;visibility:hidden"><pre id="tmp">ATGC : {{ fontWidth }}</pre> : </div> 
     
     <div ng-controller="geneInfoCtrl as gi">
-        <form>
-            <div class="pull-right" style="margin-right:20px">
-                <span>Species: </span>
-                <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
-                </select>
-            </div>
+        <div class="row" style="padding-left:20px;padding-right:20px">
+            <form>
             <div class="col-xs-3">
                 <div class="input-group">
                     <input type="text" id="geneName" name="geneName" class="form-control" placeholder="Enter gene name" ng-model="formInfo.gene"/>    
@@ -56,43 +52,22 @@
                     </span>
                 </div>
             </div>                
+            <div class="col-xs-9" style="text-align:right">
+                <span>Species: </span>
+                <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species">
+                </select>
+            </div>
             <div ng-show="message" style="text-align:center" ng-cloak>
                 <span style="background-color:pink;margin-top:10px;">{{ message }}</span>
-            </div>                           
+            </div>           
         </form>
+        </div>
         
         
         <div ng-show="geneInfo.id" ng-controller="TabController as tab" ng-cloak id="data">
         
             <div id="location" style="position: fixed;display:none;z-index:1000;background-color:#333333;padding:5px;opacity:0.9;color:#ffffff;"> {{ location }} </div>            
-
-            <table class="table table-condensed table-striped" style="margin-left:15px;margin-right:15px;">
-                <tr>
-                    <th>Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em><a href="{{geneInfo.url}}" target="_blank"><img src="/i/e-quest.gif" title="View in Ensembl" /></a></td>
-                </tr>
-                <tr>
-                    <th>Description</th><td>{{geneInfo.description}}</td>
-                </tr>
-                <tr>
-                    <th>Location</th><td>{{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}} <em>{{geneInfo.strand_str}} strand</em></td>
-                </tr>
-                <tr>               
-                    <th>Length</th><td> {{geneInfo.end - geneInfo.start + 1| number}}bp</td>
-                </tr>
-                <tr>
-                    <td>
-                        <em>Choose a transcript</em>
-                    </td>
-                    <td>
-                        <ul class="nav nav-pills">
-                
-                        <li ng-repeat="transcript in geneInfo.Transcript | orderBy:id" ng-class="{active:tab.isSet(transcript.id)}"
-                                ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}} <em ng-show="transcript.Translation">({{transcript.protein.length}} aa)</em></a></li>
-                    </ul>
-                    
-                    </td>
-                </tr>
-            </table>
+            
             
             <div class="row" >
                 <div class="col-xs-2 form-group col-fixed" id="myScrollspy" style="z-index:500">                        
@@ -124,7 +99,37 @@
                     </div>
                 </div>
                 
-                <div class="col-xs-7">
+                <div class="col-xs-8">
+                
+            <table class="table table-condensed table-striped" style="margin-left:15px;margin-right:15px;">
+                <tr>
+                    <th>Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em><a href="{{geneInfo.url}}" target="_blank"><img src="/i/e-quest.gif" title="View in Ensembl" /></a></td>
+                </tr>
+                <tr>
+                    <th>Description</th><td>{{geneInfo.description}}</td>
+                </tr>
+                <tr>
+                    <th>Location</th><td>{{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}} <em>{{geneInfo.strand_str}} strand</em></td>
+                </tr>
+                <tr>               
+                    <th>Length</th><td> {{geneInfo.end - geneInfo.start + 1| number}}bp</td>
+                </tr>
+                <tr>
+                    <td>
+                        <em>Choose a transcript</em>
+                    </td>
+                    <td>
+                        <ul class="nav nav-pills">
+                
+                        <li ng-repeat="transcript in geneInfo.Transcript | orderBy:id" ng-class="{active:tab.isSet(transcript.id)}"
+                                ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}} <em ng-show="transcript.Translation">({{transcript.protein.length}} aa)</em></a></li>
+                    </ul>
+                    
+                    </td>
+                </tr>
+            </table>
+            
+                
                     <div ng-show="loading" style="text-align:center">
                         Loading sequence ...
                     </div>                    
