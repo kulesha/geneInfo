@@ -89,14 +89,14 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
 //    $scope.fontWidth = getTextWidth("ATGC", "normal 13pt Menlo") / 4;
 
-    var el = document.getElementById('tmp');
-    console.log(el); 
-    
-    var font = elementCurrentStyle(el,"font-weight") + " " + elementCurrentStyle(el,"font-size") + " " + elementCurrentStyle(el,"font-family");
-    console.log(font);
-    console.log(getTextWidth("ATGC", font) / 4);                                  
-    $scope.fontWidth = getTextWidth("ATGC", "normal 13px Consolas") / 4;
-    console.log($scope.fontWidth);
+    var el = document.getElementById('tmp');    
+    var font = elementCurrentStyle(el,"font-variant") + " " + elementCurrentStyle(el,"font-size") + " " + elementCurrentStyle(el,"font-family");
+//    console.log(font);
+    var text = repeat('A', $scope.formInfo.width);
+//    console.log(text);
+                                      
+    $scope.fontWidth = getTextWidth(text, font) / $scope.formInfo.width;
+//    console.log($scope.fontWidth);
                                       
     var self = this;
     
@@ -151,6 +151,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 t.protein = sdata.seq;
                 t.plen = sdata.seq.length;
             });
+        } else {
+            t.plen = 0;
         }
     };
                                       
@@ -363,11 +365,24 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     this.untrack = function() {
         $("#location").hide();
     };
-    this.track = function(event, row, atype) {
-        //console.log(row + ' : ' + event.offsetX );
-        var pos = row * $scope.formInfo.width + Math.floor(event.offsetX / $scope.fontWidth);
+    this.track = function(e, row, atype) {
+        var padding = 0;
+        //console.log((e.offsetX -padding) + ' * ' +  (e.clientX - $(e.target).offset().left));
+        var x  = e.offsetX !== undefined ? (e.offsetX -padding ) : (e.clientX - $(e.target).offset().left);
+        var rowpos = Math.floor(x / $scope.fontWidth) + 1;
+        //console.log(rowpos);
+        
+        
+        if (rowpos < 1){
+            rowpos = 1;
+        } else {
+            if (rowpos >$scope.formInfo.width) {
+                rowpos = $scope.formInfo.width;
+            }
+        }
+        var pos = row * $scope.formInfo.width + rowpos ;
         $scope.location = pos + " " +atype;
-        $("#location").css({top: event.clientY + 10, left: event.clientX + 20}).show();
+        $("#location").css({top: e.clientY + 10, left: e.clientX + 20}).show();
     };
     
                                        
