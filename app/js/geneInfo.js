@@ -5,6 +5,7 @@ function repeat(c, len) {
     return e;
 }
 
+// function to get the width of the font
 function getTextWidth(text, font) {
     // re-use canvas object for better performance
     var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
@@ -14,6 +15,19 @@ function getTextWidth(text, font) {
     return metrics.width;
 };
 
+// function to get the selected sequence 
+function getSelectedText() {
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    text = text.replace(/[^AGCT]/g, '');
+    return text;
+}
+
+// function to get the font  used to display sequence
 function elementCurrentStyle(element, styleName){
     if (element.currentStyle){
         var i = 0, temp = "", changeCase = false;
@@ -80,24 +94,22 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
                                       
     // by default we'll look for BRCA2
-    $scope.formInfo = {gene: 'BRCA2', width: 100, coding: false};
+    $scope.formInfo = {gene: 'HIST1H4F', width: 100, coding: false, blast: 'http://www.ensembl.org/common/Tools/Blast'};
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
-              
-    $scope.markup = [];
-    
-//    $scope.fontWidth = getTextWidth("ATGC", "normal 13pt Menlo") / 4;
 
+    // get the font used to display sequence
     var el = document.getElementById('tmp');    
     var font = elementCurrentStyle(el,"font-variant") + " " + elementCurrentStyle(el,"font-size") + " " + elementCurrentStyle(el,"font-family");
-//    console.log(font);
+
+    // need to use the same length as the display window, otherwise IE gives rounded values                                  
     var text = repeat('A', $scope.formInfo.width);
-//    console.log(text);
-                                      
+
+    // get the font width
     $scope.fontWidth = getTextWidth(text, font) / $scope.formInfo.width;
-//    console.log($scope.fontWidth);
-                                      
+
+    $scope.currentSelect = { start: -1, stop: -1 };                                  
     var self = this;
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
@@ -107,10 +119,15 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     $http.get(surl).success(function(sdata ){
         self.speciesList = sdata.species;
     });
-        
+    $scope.formInfo.blast = 'http://www.ensembl.org/' + self.species + '/Tools/Blast';    
     var ctrl = this;
     
-    
+    // when changing species - change the url of the blast tool                                  
+    this.update_blast = function() {
+        $scope.formInfo.blast = 'http://www.ensembl.org/' + ctrl.species + '/Tools/Blast';    
+        $("#blast_form").action = $scope.formInfo.blast;
+    };
+                                      
     $scope.clearTags = function() {
         ctrl.foundSeq = '';
         
@@ -357,21 +374,12 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
 myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScroll', 
                                    function($scope, $http, $location, $anchorScroll){    
     this.currentTab = '-';
-    $scope.location = 0;
-    this.click = function(event, row) {
-        console.log(row + ' : ' + event.offsetX);
-    };
-    
-    this.untrack = function() {
-        $("#location").hide();
-    };
-    this.track = function(e, row, atype) {
+                                       
+    var ctrl = this;
+    this.getLinePos = function(e) {
         var padding = 0;
-        //console.log((e.offsetX -padding) + ' * ' +  (e.clientX - $(e.target).offset().left));
         var x  = e.offsetX !== undefined ? (e.offsetX -padding ) : (e.clientX - $(e.target).offset().left);
         var rowpos = Math.floor(x / $scope.fontWidth) + 1;
-        //console.log(rowpos);
-        
         
         if (rowpos < 1){
             rowpos = 1;
@@ -380,8 +388,104 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                 rowpos = $scope.formInfo.width;
             }
         }
-        var pos = row * $scope.formInfo.width + rowpos ;
-        $scope.location = pos + " " +atype;
+        return rowpos;
+    };
+                          
+                                       
+    this.click = function(e, row, atype) {
+        return;
+        $scope.blast_shown = 0;
+        $("#blast").hide();
+        ctrl.clear_select();
+    };
+    
+    this.dblclick = function(e, row, atype) {
+        $scope.blast_shown = 0;
+        $("#blast").hide();
+        ctrl.clear_select();
+    };
+    
+    this.start_select = function( e, row, atype ) {
+        var x = this.getLinePos(e);
+        $scope.blast_shown = 0;
+        $scope.currentSelect.start = $scope.formInfo.width * row + x;
+        $("#blast").hide();
+    };
+    
+    this.stop_select = function( e, row, atype ) {
+   
+        var x = this.getLinePos(e);
+        $scope.currentSelect.stop = $scope.formInfo.width * row + x;
+   
+        //console.log("Select " + $scope.currentSelect.start + ' .. ' + + $scope.currentSelect.stop);   
+        if ($scope.currentSelect.stop === $scope.currentSelect.start) {
+            ctrl.clear_select();
+            return ;
+        }
+        if (0) {
+        
+        var start = $scope.currentSelect.start-1;
+        var len = $scope.currentSelect.stop - start;
+        
+        if ($scope.currentSelect.stop < $scope.currentSelect.start) {
+            start = $scope.currentSelect.stop -1;
+            len = $scope.currentSelect.start - start ;
+        }
+        var seq = $scope.geneInfo.sequence.seq.substr(start, len);
+        console.log( start + ' * ' + len + ' * ' + seq);
+    }
+        $scope.blast_sequence = getSelectedText();
+        $("#location").hide();
+        $("#blast").css({top: e.clientY + 10, left: e.clientX + 10}).show();
+        $scope.blast_shown = 1;
+        
+    };
+    
+    this.clear_select = function() {
+        $scope.currentSelect.start = -1;
+        $scope.currentSelect.end = -1;
+        $scope.blast_shown = 0;
+    };
+                                       
+    this.untrack = function() {
+        $("#location").hide();
+    };
+
+    this.goto_blast = function() {
+        $("#blast").hide();
+        ctrl.clear_select();
+        document.blast_form.action = $scope.formInfo.blast;        
+        return true;
+    };
+                                       
+    this.track = function(e, row, atype) {
+        if ($scope.blast_shown) {
+            return;
+        }
+        if ($scope.currentSelect.start > 0) {
+            //var curpos = this.getLinePos(e) + row * $scope.formInfo.width;
+            //$scope.location = (curpos - $scope.currentSelect.start ) + ' ' + atype + ' selected';
+            var seq = getSelectedText();
+            //console.log(seq);
+            $scope.location = (seq.split(/[AGTC]/).length -1 )+ ' ' + atype + ' selected';
+        } else {
+            var padding = 0;
+        //console.log((e.offsetX -padding) + ' * ' +  (e.clientX - $(e.target).offset().left));
+            var x  = e.offsetX !== undefined ? (e.offsetX -padding ) : (e.clientX - $(e.target).offset().left);
+            var rowpos = Math.floor(x / $scope.fontWidth) + 1;
+        //console.log(rowpos);
+        
+        
+            if (rowpos < 1){
+                rowpos = 1;
+            } else {
+                if (rowpos >$scope.formInfo.width) {
+                    rowpos = $scope.formInfo.width;
+                }
+            }
+            var pos = row * $scope.formInfo.width + rowpos ;
+            $scope.location = pos + " " +atype;
+        }
         $("#location").css({top: e.clientY + 10, left: e.clientX + 20}).show();
     };
     
