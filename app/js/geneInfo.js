@@ -23,7 +23,19 @@ function getSelectedText() {
     } else if (document.selection && document.selection.type != "Control") {
         text = document.selection.createRange().text;
     }
-    text = text.replace(/[^AGCT]/g, '');
+    text = text.replace(/[^A-Z]/g, '');
+    return text;
+}
+
+function getSelectedDNA() {
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    text = text.replace(/[\r\n][A-Z\-]+[\r\n]/g, '');
+    text = text.replace(/[^A-Z]/g, '');
     return text;
 }
 
@@ -434,7 +446,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         var seq = $scope.geneInfo.sequence.seq.substr(start, len);
         console.log( start + ' * ' + len + ' * ' + seq);
     }
-        $scope.blast_sequence = getSelectedText();
+        $scope.blast_sequence = getSelectedDNA();
         $("#location").hide();
         $("#blast").css({top: e.clientY + 10, left: e.clientX + 10}).show();
         $scope.blast_shown = 1;
@@ -465,7 +477,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         if ($scope.currentSelect.start > 0) {
             //var curpos = this.getLinePos(e) + row * $scope.formInfo.width;
             //$scope.location = (curpos - $scope.currentSelect.start ) + ' ' + atype + ' selected';
-            var seq = getSelectedText();
+            var seq = getSelectedDNA();
             //console.log(seq);
             $scope.location = (seq.split(/[AGTC]/).length -1 )+ ' ' + atype + ' selected';
         } else {
