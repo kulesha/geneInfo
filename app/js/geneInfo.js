@@ -105,8 +105,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         return 1;
     };
                                       
-    // by default we'll look for BRCA2
-    $scope.formInfo = {gene: 'HIST1H4F', width: 100, coding: false, blast: 'http://www.ensembl.org/common/Tools/Blast'};
+    // by default we'll look for BRCA2, HIST1H4F - smallest
+    $scope.formInfo = {gene: 'BRCA2', width: 100, coding: false, blast: 'http://www.ensembl.org/common/Tools/Blast'};
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
@@ -175,6 +175,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     $scope.getProtein = function(t) {
         //return;
         if (t.Translation) {
+            t.plen = 1;
             var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
             $http.get(purl).success(function(sdata ){
                 t.protein = sdata.seq;
@@ -224,6 +225,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             });
             
             for (var i in data.Transcript) {
+                console.log(data.Transcript[i]);
                 $scope.getProtein(data.Transcript[i]);                
             }
             

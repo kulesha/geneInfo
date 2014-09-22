@@ -128,7 +128,7 @@
                     <td>
                         <ul class="nav nav-pills">
                 
-                        <li ng-repeat="transcript in geneInfo.Transcript | orderBy:id" ng-class="{active:tab.isSet(transcript.id)}"
+                        <li ng-repeat="transcript in geneInfo.Transcript | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
                                 ng-click="tab.setTab(transcript.id)"><a href="#">{{transcript.id}} <em ng-show="transcript.Translation">({{transcript.protein.length}} aa)</em></a></li>
                     </ul>
                     
