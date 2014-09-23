@@ -103,7 +103,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     $scope.location = 0;
     if ($window.ga){
         var path = '/';
-        $window.ga('send', 'pageview', { page: page });
+        $window.ga('send', 'pageview', { page: path });
     }
     
                                       
@@ -198,9 +198,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     // function that will be called on form submit
     this.findGene = function() {
         if ($window.ga){
-            var path = '/gene/'+$scope.formInfo.gene;
-            console.log("B:" + path);
-            $window.ga('send', 'pageview', { page: page });
+            var path = '/gene/'+$scope.formInfo.gene;            
+            $window.ga('send', 'pageview', { page: path });
         }
     
         
@@ -256,7 +255,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         $scope.clearTags();
         if ($window.ga){
             var path = '/pos/bp';
-            $window.ga('send', 'pageview', { page: page });
+            $window.ga('send', 'pageview', { page: path });
         }
 
         var w = $scope.formInfo.width;
@@ -310,7 +309,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         $scope.clearTags();
         if ($window.ga){
             var path = '/pos/aa';
-            $window.ga('send', 'pageview', { page: page });
+            $window.ga('send', 'pageview', { page: path });
         }
 
         var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
