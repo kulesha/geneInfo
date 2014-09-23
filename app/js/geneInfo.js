@@ -492,9 +492,17 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         $("#blast").hide();
         ctrl.clear_select();        
         document.blast_form.action = $scope.formInfo.blast;        
+        var path = '/blast/ensembl';
+        
         if ($scope.blast_type === 'nblast') {
             document.blast_form.action = 'http://www.ncbi.nlm.nih.gov/blast/Blast.cgi';
+            path = '/blast/ncbi';
         }
+        
+        if ($window.ga){
+            $window.ga('send', 'pageview', { page: path });
+        }
+
         return true;
     };
     
