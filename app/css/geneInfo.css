@@ -60,3 +60,8 @@ pre {
     padding: 1em;
     padding-bottom:0.1em;
  }
+#blast_form {
+    background-color: #e0e8ff;
+    opacity:1;
+    padding:5px;    
+}

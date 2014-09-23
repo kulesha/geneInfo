@@ -83,8 +83,9 @@
                     <input type="hidden" name="query_sequence" value="{{blast_sequence}}" />
                     <input type="hidden" name="QUERY" value="{{blast_sequence}}" />
                     <input type="hidden" name="PAGE_TYPE" value="BlastSearch" />
-                    <button type="submit" class="btn btn-success" name="stype" value="eblast" ng-click="tab.set_eblast()">eBLAST</button>
-                    <button type="submit" class="btn btn-success" name="stype" value="nblast" ng-click="tab.set_nblast()">nBLAST</button>
+                    <span><b>BLAST</b></span>
+                    <button type="submit" class="btn btn-success btn-xs" name="stype" value="eblast" ng-click="tab.set_eblast()">Ensembl</button>
+                    <button type="submit" class="btn btn-success btn-xs" name="stype" value="nblast" ng-click="tab.set_nblast()">NCBI</button>
                 </form>
             </div>
             
