@@ -5,7 +5,7 @@
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/geneInfo.css">
+    <link rel="stylesheet" type="text/css" href="css/geneInfo.css">
 
     <!-- added to enable sticky goto box -->
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -23,7 +23,8 @@
                 </div>
                 <div class="modal-body" ng-switch on="items[0]">
                     <p ng-switch-when="Contact">All enquires please contact ek@ebi.ac.uk</p>
-                    <p ng-switch-when="Help">This is a demo. The site will move to a new address in October 2014.</p>
+                    <p ng-switch-when="About">Created by Eugene Kulesha<br/>
+                    thanks to the ideas of Vera Grinkevich <br/>and e! REST API work of Magali Ruffier.</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" ng-click="ok()">OK</button>            
@@ -31,11 +32,11 @@
             </script>
             
             
-            <a class="navbar-brand" href="#">geneSpy ( demo )</a>
+            <a class="navbar-brand" href="#">geneSpy</a>
             
             <ul class="nav navbar-nav pull-right">
                 <li><a href="#" ng-click="menu.show('Contact')">Contact</a></li>
-                <li><a href="#" ng-click="menu.show('Help')">Help</a></li>
+                <li><a href="#" ng-click="menu.show('About')">About</a></li>
             </ul>            
         </nav>
     </div>
@@ -198,7 +199,7 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
     <script src="//code.angularjs.org/1.2.20/angular-sanitize.min.js"></script>
  
-    <script type="text/javascript" src="/js/geneInfo.js"></script>
+    <script type="text/javascript" src="js/geneInfo.js"></script>
            <!-- for dialog boxes -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
