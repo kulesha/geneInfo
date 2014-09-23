@@ -31,9 +31,9 @@
                 </div>
                 <div class="modal-body" ng-switch on="items[0]">
                     <p ng-switch-when="Contact">All enquires please contact ek@ebi.ac.uk</p>
-                    <p ng-switch-when="About">geneSpy, version 0.3<br/>
-                    Created by Eugene Kulesha and Vera Grinkevich <br/>
-                    Thanks to Magali Ruffier for updates to e! REST API.</p>
+                    <p ng-switch-when="About">geneSpy, version 0.3<br/><br/>
+                    Created by Eugene Kulesha and Vera Grinkevich <br/><br/>
+                    Thanks to Magali Ruffier for updates to e! REST AP.</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary" ng-click="ok()">OK</button>            
@@ -94,7 +94,7 @@
                 <div class="col-xs-2 form-group col-fixed" id="myScrollspy" style="z-index:500">                        
                     <div class="input-group"  data-spy="affix" data-offset-top="0" id="positionBox">
                     <form role="form" class="form-horizontal">    
-                        <input autocomplete="off" type="text" name="pos" class="form-control input-sm" placeholder="Enter position" ng-model="formInfo.pos"/>    <br/>
+                        <input autocomplete="off" type="number" min="1" required="1" name="pos" class="form-control input-sm" placeholder="Enter position" ng-model="formInfo.pos"/>    <br/>
                         <table style="width:100%">
                             <tr>
                                 <td style="width:10px">    

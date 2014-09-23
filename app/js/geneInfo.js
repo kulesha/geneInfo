@@ -260,7 +260,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
 
         var w = $scope.formInfo.width;
         
-        var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
+        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         var coding = $scope.formInfo.coding;
         var tmp = $scope.geneInfo.sequence.seq;
         
@@ -312,7 +312,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             $window.ga('send', 'pageview', { page: path });
         }
 
-        var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
+        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
         //console.log(ipos);
         
