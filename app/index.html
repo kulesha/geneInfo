@@ -161,8 +161,9 @@
                                         
                     <div ng-hide="formInfo.coding == true">
                         <table>
-                            <tr class="sequence" id="a_{{$index}}" ng-repeat="segment in geneInfo.segments track by $index">
+                            <tr class="sequence" ng-repeat="segment in geneInfo.segments track by $index">
                                 <td>
+                                    <a class="anchor" id="a_{{$index}}"></a> 
                                     <table class="table-condensed">
                                         <tr ng-show="geneInfo.psegments[$index].indexOf('-') > -1">
                                             <td class="num">{{geneInfo.isegments[$index]}}:</td>
@@ -183,13 +184,14 @@
                     <div ng-show="formInfo.coding == true">
                         <div ng-hide="tab.hasTranslation()" class="warn">This transcript does not code for any proteins.</div>
                         <table ng-show="tab.hasTranslation()">
-                            <tr class="sequence" id="a_{{$index}}" ng-repeat="segment in geneInfo.csegments track by $index">
+                            <tr class="sequence" ng-repeat="segment in geneInfo.csegments track by $index">
                                 <td>
+                                    <a class="anchor" id="a_{{$index}}"></a>
                                     <table class="table-condensed">
                                         <tr ng-show="geneInfo.pcsegments[$index].indexOf('-') > -1">
-                                            <td class="num">{{geneInfo.icsegments[$index]}}</td>
+                                            <td class="num">{{geneInfo.icsegments[$index]}}:</td>
                                             <td><pre><span ng-bind-html="geneInfo.pcsegments[$index]"></span></pre></td>
-                                            <td class="num">{{ geneInfo.icsegments[$index] + baseCount(geneInfo.pcsegments[$index]) -1 }}</td>
+                                            <td class="num">:{{ geneInfo.icsegments[$index] + baseCount(geneInfo.pcsegments[$index]) -1 }}</td>
                                         </tr>
                                         <tr>
                                             <td class="num">{{ ($index * formInfo.width) + 1 | number }}</td>
