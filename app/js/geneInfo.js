@@ -1,3 +1,4 @@
+
 // function to add C character Len times
 function repeat(c, len) {   
     for (var e = ''; e.length < len;)
@@ -34,7 +35,10 @@ function getSelectedDNA() {
     } else if (document.selection && document.selection.type != "Control") {
         text = document.selection.createRange().text;
     }
-    text = text.replace(/[\r\n][A-Z\-]+[\r\n]/g, '');
+    // remove protein sequence
+    text = text.replace(/\d+\:[A-Z\-\s]+\:\d+/g, '');
+    // now remove all the special chars
+    
     text = text.replace(/[^A-Z]/g, '');
     return text;
 }
@@ -225,8 +229,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             });
             
             for (var i in data.Transcript) {
-                console.log(data.Transcript[i]);
-                $scope.getProtein(data.Transcript[i]);                
+                $scope.getProtein(data.Transcript[i]);
             }
             
         }).error(function(data, status, header, config){
