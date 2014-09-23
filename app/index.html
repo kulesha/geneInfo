@@ -81,7 +81,10 @@
                 
                 <form role="form" target="gs_blast" id="blast_form" name="blast_form" method="post" ng-submit="tab.goto_blast();" action="#">
                     <input type="hidden" name="query_sequence" value="{{blast_sequence}}" />
-                    <button type="submit" class="btn btn-success">BLAST</button>
+                    <input type="hidden" name="QUERY" value="{{blast_sequence}}" />
+                    <input type="hidden" name="PAGE_TYPE" value="BlastSearch" />
+                    <button type="submit" class="btn btn-success" name="stype" value="eblast" ng-click="tab.set_eblast()">eBLAST</button>
+                    <button type="submit" class="btn btn-success" name="stype" value="nblast" ng-click="tab.set_nblast()">nBLAST</button>
                 </form>
             </div>
             
