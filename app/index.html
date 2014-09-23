@@ -23,7 +23,8 @@
                 </div>
                 <div class="modal-body" ng-switch on="items[0]">
                     <p ng-switch-when="Contact">All enquires please contact ek@ebi.ac.uk</p>
-                    <p ng-switch-when="About">Created by Eugene Kulesha<br/>
+                    <p ng-switch-when="About">geneSpy, version 0.3<br/>
+                    Created by Eugene Kulesha<br/>
                     thanks to the ideas of Vera Grinkevich <br/>and e! REST API work of Magali Ruffier.</p>
                 </div>
                 <div class="modal-footer">
@@ -195,6 +196,11 @@
         </div>
     </div>
     <div style="height:30px">&nbsp;</div>
+    <div id="footer" class="panel-footer">        
+        <div class="container text-center">
+            <p class="text-muted credit">Powered by <a href="http://rest.ensembl.org"><img src="i/e-quest.gif" /> REST API</a></p>
+        </div>
+    </div>
         
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
     <script src="//code.angularjs.org/1.2.20/angular-sanitize.min.js"></script>
@@ -204,6 +210,13 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
 
+    <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+  ga('create', 'UA-55089504-1', 'auto');
+    </script>
 </body>
 </html>

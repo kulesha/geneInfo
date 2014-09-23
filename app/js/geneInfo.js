@@ -62,10 +62,10 @@ function elementCurrentStyle(element, styleName){
 }
 
 // Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
-var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filter('baseCount', function() {
+var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filter('baseCount', function() {    
         return function(input) { 
             if (input) {
-                return input.split(re).length -1;
+                return input.split(re).length -1;                
             }
             return 0;
         }
@@ -96,12 +96,17 @@ var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
     };
 };
 // main controller - it accepts the input gene name and fetches the gene info
-myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', 
-                                  function ($scope, $http, $sce, $location, $anchorScroll) {
+myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', '$window', 
+                                  function ($scope, $http, $sce, $location, $anchorScroll, $window) {
 
     $scope.message = '';
     $scope.location = 0;
- 
+    if ($window.ga){
+        var path = '/';
+        $window.ga('send', 'pageview', { page: page });
+    }
+    
+                                      
     $scope.baseCount = function(str) {
         if(str) {            
             return str.split(/[A-Z]/).length - 1;
@@ -192,6 +197,13 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     // function that will be called on form submit
     this.findGene = function() {
+        if ($window.ga){
+            var path = '/gene/'+$scope.formInfo.gene;
+            console.log("B:" + path);
+            $window.ga('send', 'pageview', { page: page });
+        }
+    
+        
         $scope.message = '';
         $scope.formInfo.coding = false;
         $scope.clearTags();
@@ -242,7 +254,11 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     this.findBP = function(tab) {
         $scope.clearTags();
-        
+        if ($window.ga){
+            var path = '/pos/bp';
+            $window.ga('send', 'pageview', { page: page });
+        }
+
         var w = $scope.formInfo.width;
         
         var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
@@ -292,6 +308,11 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     this.findAA = function(tab) {
         $scope.clearTags();
+        if ($window.ga){
+            var path = '/pos/aa';
+            $window.ga('send', 'pageview', { page: page });
+        }
+
         var ipos = parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
         //console.log(ipos);
@@ -449,7 +470,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
             len = $scope.currentSelect.start - start ;
         }
         var seq = $scope.geneInfo.sequence.seq.substr(start, len);
-        console.log( start + ' * ' + len + ' * ' + seq);
+//        console.log( start + ' * ' + len + ' * ' + seq);
     }
         $scope.blast_sequence = getSelectedDNA();
         $("#location").hide();
