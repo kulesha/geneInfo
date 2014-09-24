@@ -115,7 +115,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
                                       
     // by default we'll look for BRCA2, HIST1H4F - smallest
-    $scope.formInfo = {gene: 'BRCA2', width: 100, coding: false, blast: 'http://www.ensembl.org/common/Tools/Blast'};
+    $scope.formInfo = {gene: 'HIST1H4F', width: 100, coding: false, blast: 'http://www.ensembl.org/common/Tools/Blast'};
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
