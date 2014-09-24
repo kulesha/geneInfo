@@ -439,8 +439,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
 }]);
 
 
-myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScroll', 
-                                   function($scope, $http, $location, $anchorScroll){    
+myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScroll', '$window', 
+                                   function($scope, $http, $location, $anchorScroll, $window){    
     this.currentTab = '-';
                                        
     var ctrl = this;
