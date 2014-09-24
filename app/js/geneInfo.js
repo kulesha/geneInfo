@@ -335,7 +335,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var coding = $scope.formInfo.coding;
      
             var tmp = coding ? t.pseq : t.ppseq;
-            //console.log(t);
+//            console.log(t);
             if (ipos > t.plen) {
                 ctrl.foundSeq = 'Length is only ' + t.plen + ' aa';
                 return;
@@ -348,7 +348,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var pposA = tmp.split(/\-/, ipos*2-1).join('X').length;          
             var pposB = tmp.split(/\-/, ipos*2).join('X').length;          
             var gpos = [pposA, ppos, pposB];
-           // console.log(gpos);
             
             var sbin = Math.floor(ppos / w);
             var spos = ppos % w;
@@ -372,15 +371,28 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var tmp3 = coding ? t.cdna : $scope.geneInfo.sequence.seq;
             var str3 = tmp3.substr(gpos[0], 1) + tmp3.substr(gpos[1], 1) + tmp3.substr(gpos[2], 1);
             
-            var aStart = pposA + $scope.geneInfo.start;
-            //console.log(aStart);
-            
-            var i = 0;
-            for (var j in t.Exon) {
-                if (t.Exon[j].start <= aStart) {
-                    i++;
+            if ($scope.geneInfo.strand === -1) {
+                var aStart = $scope.geneInfo.end - pposA;
+                var i = 0;
+                var exons = t.Exon;
+                for (var j in exons) {
+                    if (t.Exon[j].end >= aStart) {
+                        i++;
+                    }
+                }
+
+            } else {
+                var aStart = pposA + $scope.geneInfo.start;
+                var i = 0;
+                var exons = t.Exon;
+                for (var j in exons) {
+                    if (t.Exon[j].start <= aStart) {
+                        i++;
+                    }
                 }
             }
+            
+            
             
             var resStr = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3 + '<div style="margin:0">at ' + aStart + " bp</div>"; 
                 
