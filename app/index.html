@@ -110,7 +110,7 @@
                             </tr>
                         </table>
                     
-                        <div class="warn" ng-show="gi.foundSeq">{{ gi.foundSeq }}</div>
+                        <div class="warn" ng-show="gi.foundSeq"><span ng-bind-html="gi.foundSeq"></span></div>
                         
                         <div ng-show="tab.hasCoding()">
                             <em>Coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.setTab()" name="coding"/>
@@ -186,7 +186,7 @@
                         <table ng-show="tab.hasTranslation()">
                             <tr class="sequence" ng-repeat="segment in geneInfo.csegments track by $index">
                                 <td>
-                                    <a class="anchor" id="a_{{$index}}"></a>
+                                    <a class="anchor" id="b_{{$index}}"></a>
                                     <table class="table-condensed">
                                         <tr ng-show="geneInfo.pcsegments[$index].indexOf('-') > -1">
                                             <td class="num">{{geneInfo.icsegments[$index]}}:</td>

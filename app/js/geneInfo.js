@@ -253,6 +253,12 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     this.findBP = function(tab) {
         $scope.clearTags();
+        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
+        
+        if (! ipos) { // this will be set only if validation passes in html
+            return;
+        }
+
         if ($window.ga){
             var path = '/pos/bp';
             $window.ga('send', 'pageview', { page: path });
@@ -260,7 +266,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
 
         var w = $scope.formInfo.width;
         
-        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         var coding = $scope.formInfo.coding;
         var tmp = $scope.geneInfo.sequence.seq;
         
@@ -307,14 +312,19 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     this.findAA = function(tab) {
         $scope.clearTags();
+        
+        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
+        
+        if (! ipos) { // this will be set only if validation passes in html
+            return;
+        }
+
         if ($window.ga){
             var path = '/pos/aa';
             $window.ga('send', 'pageview', { page: path });
         }
 
-        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
-        //console.log(ipos);
         
         var t;
         for(var i in $scope.geneInfo.Transcript) {
@@ -322,24 +332,25 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 t = $scope.geneInfo.Transcript[i];
             }
         }
-        
+            
         if (t && t.Translation) {
             var coding = $scope.formInfo.coding;
      
             var tmp = coding ? t.pseq : t.ppseq;
-            
+            console.log(t);
             if (ipos > t.plen) {
                 ctrl.foundSeq = 'Length is only ' + t.plen + ' aa';
                 return;
             }
             
             var w = $scope.formInfo.width;
-            
+            // first find the letter
             var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
+            // then find the preceeding - and then following - ( as the AA can be split between exons )
             var pposA = tmp.split(/\-/, ipos*2-1).join('X').length;          
             var pposB = tmp.split(/\-/, ipos*2).join('X').length;          
             var gpos = [pposA, ppos, pposB];
-            
+            console.log(gpos);
             var sbin = Math.floor(ppos / w);
             var spos = ppos % w;
             var tagStart = '<span class="tag">';
@@ -361,7 +372,24 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             
             var tmp3 = coding ? t.cdna : $scope.geneInfo.sequence.seq;
             var str3 = tmp3.substr(gpos[0], 1) + tmp3.substr(gpos[1], 1) + tmp3.substr(gpos[2], 1);
-            ctrl.foundSeq = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3;
+            
+            var aStart = pposA + $scope.geneInfo.start;
+            var i = 0;
+            while (t.Exon[i].start < aStart) {
+                i++;
+            }
+            
+            var resStr = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3 + '<div style="margin:0">at ' + aStart + " bp</div>"; 
+                
+            if (pposB - pposA == 2) {
+                resStr = resStr + 'in exon ' + i;
+            } else {
+                resStr = resStr + 'in exons ' + i + ' and ' + (i+1);
+            }
+            
+            ctrl.foundSeq = resStr;
+            // now let's find the exon number
+            
             for(var i in gpos) {
                 var sbin = Math.floor(gpos[i] / w);
                 var spos = gpos[i] % w;
@@ -645,22 +673,25 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                     var pEnd = -1;
                     var pSeq = t.pseq;
                     var pseq = '';
-                    
+                    //var mappings = [];        
                     for(var i in data.mappings) {
                         if (data.mappings[i].gap === 0) {
                             var s = (strand < 0) ? gEnd - data.mappings[i].end : data.mappings[i].start - gStart;
                             var e = (strand < 0) ? gEnd - data.mappings[i].start : data.mappings[i].end - gStart;
-                            
                             pseq = pseq + repeat(' ', s - pEnd - 1);
                             var len = e - s + 1;
                             
+                            //var a = [s, e];
+                            //console.log(a);
+                            //mappings.push(a);
                             pseq = pseq + pSeq.substr(0, len);
                             pSeq = pSeq.substr(len);
                             pEnd = e;
                         }                                             
                     }
+                    
                     t.ppseq = pseq;
-                 //   console.log(pseq);
+                    //console.log(mappings);
                     var w = $scope.formInfo.width;
                     var restr = ".{1,"+w+"}";
                     var re = new RegExp(restr,'g');

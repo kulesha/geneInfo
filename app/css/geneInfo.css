@@ -25,6 +25,7 @@ a img {
 }
 .warn {
     background-color:#ffeeee;
+    padding-left:2px;
 }
 
 .table-condensed>tbody>tr>td {
