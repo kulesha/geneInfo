@@ -322,9 +322,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         if ($window.ga){
             var path = '/pos/aa';
             $window.ga('send', 'pageview', { page: path });
-        }
-
-        
+        }        
         
         var t;
         for(var i in $scope.geneInfo.Transcript) {
@@ -337,7 +335,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var coding = $scope.formInfo.coding;
      
             var tmp = coding ? t.pseq : t.ppseq;
-            console.log(t);
+            //console.log(t);
             if (ipos > t.plen) {
                 ctrl.foundSeq = 'Length is only ' + t.plen + ' aa';
                 return;
@@ -350,7 +348,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var pposA = tmp.split(/\-/, ipos*2-1).join('X').length;          
             var pposB = tmp.split(/\-/, ipos*2).join('X').length;          
             var gpos = [pposA, ppos, pposB];
-            console.log(gpos);
+           // console.log(gpos);
+            
             var sbin = Math.floor(ppos / w);
             var spos = ppos % w;
             var tagStart = '<span class="tag">';
@@ -374,9 +373,13 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var str3 = tmp3.substr(gpos[0], 1) + tmp3.substr(gpos[1], 1) + tmp3.substr(gpos[2], 1);
             
             var aStart = pposA + $scope.geneInfo.start;
+            //console.log(aStart);
+            
             var i = 0;
-            while (t.Exon[i].start < aStart) {
-                i++;
+            for (var j in t.Exon) {
+                if (t.Exon[j].start <= aStart) {
+                    i++;
+                }
             }
             
             var resStr = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3 + '<div style="margin:0">at ' + aStart + " bp</div>"; 
