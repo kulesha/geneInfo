@@ -321,10 +321,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             return;
         }
 
-        //if ($window.ga){
-        //    var path = '/pos/aa';
-        //    $window.ga('send', 'pageview', { page: path });
-        //}        
         
         var t;
         for(var i in $scope.geneInfo.Transcript) {
@@ -350,7 +346,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             var pposA = tmp.split(/\-/, ipos*2-1).join('X').length;          
             var pposB = tmp.split(/\-/, ipos*2).join('X').length;          
             var gpos = [pposA, ppos, pposB];
-            
+
+//            console.log(gpos);
             var sbin = Math.floor(ppos / w);
             var spos = ppos % w;
             var tagStart = '<span class="tag">';
@@ -358,6 +355,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
             var tmp2 = coding ? $scope.geneInfo.pcsegments[sbin] : $scope.geneInfo.psegments[sbin];
             var str = tmp2.substr(0, spos) + tagStart + tmp2.substr(spos, 1) + tagEnd + tmp2.substr(spos+1);
+
+            var foundExtra = '';
             
             if (coding) {
                 $scope.geneInfo.pcsegments[sbin] = str;
@@ -367,42 +366,41 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 $scope.geneInfo.psegments[sbin] = str;
                 $scope.currentpTag = sbin;   
                 $location.hash('a_'+sbin);            
+                if ($scope.geneInfo.strand === -1) {
+                    var aStart = $scope.geneInfo.end - pposA;
+                    var i = 0;
+                    var exons = t.Exon;
+                    for (var j in exons) {
+                        if (t.Exon[j].end >= aStart) {
+                            i++;
+                        }
+                    }
+                } else {
+                    var aStart = pposA + $scope.geneInfo.start;
+                    var i = 0;
+                    var exons = t.Exon;
+                    for (var j in exons) {
+                        if (t.Exon[j].start <= aStart) {
+                            i++;
+                        }
+                    }
+                }
+                
+                foundExtra = '<div style="margin:0">at ' + aStart + " bp</div>";
+                if (pposB - pposA == 2) {
+                    foundExtra = foundExtra + 'in exon ' + i;
+                } else {
+                    foundExtra = foundExtra + 'in exons ' + i + ' and ' + (i+1);
+                }
+            
             }
             $anchorScroll();            
             
             var tmp3 = coding ? t.cdna : $scope.geneInfo.sequence.seq;
             var str3 = tmp3.substr(gpos[0], 1) + tmp3.substr(gpos[1], 1) + tmp3.substr(gpos[2], 1);
             
-            if ($scope.geneInfo.strand === -1) {
-                var aStart = $scope.geneInfo.end - pposA;
-                var i = 0;
-                var exons = t.Exon;
-                for (var j in exons) {
-                    if (t.Exon[j].end >= aStart) {
-                        i++;
-                    }
-                }
-
-            } else {
-                var aStart = pposA + $scope.geneInfo.start;
-                var i = 0;
-                var exons = t.Exon;
-                for (var j in exons) {
-                    if (t.Exon[j].start <= aStart) {
-                        i++;
-                    }
-                }
-            }
-            
-            
-            
-            var resStr = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3 + '<div style="margin:0">at ' + aStart + " bp</div>"; 
+            var resStr = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3 + foundExtra; 
                 
-            if (pposB - pposA == 2) {
-                resStr = resStr + 'in exon ' + i;
-            } else {
-                resStr = resStr + 'in exons ' + i + ' and ' + (i+1);
-            }
             
             ctrl.foundSeq = resStr;
             // now let's find the exon number
