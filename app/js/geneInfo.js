@@ -115,7 +115,13 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
                                       
     // by default we'll look for BRCA2, HIST1H4F - smallest
-    $scope.formInfo = {gene: 'HIST1H4F', width: 100, coding: false, blast: 'http://www.ensembl.org/common/Tools/Blast'};
+    $scope.formInfo = {
+        gene: 'HIST1H4F', 
+        width: 100, 
+        coding: false, 
+        restServer: 'http://rest.ensembl.org',
+        eServer: 'http://www.ensembl.org/'
+    };
     
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
@@ -134,18 +140,19 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     var self = this;
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
-                                  
-    var surl = 'http://rest.ensembl.org/info/species?content-type=application/json;division=ensembl';                                   
+//gtb                           q14  bbb          http://grch37.rest.ensembl.org
+                                      
+    var surl = $scope.formInfo.restServer + '/info/species?content-type=application/json;division=ensembl';                                   
     self.species = 'homo_sapiens';   
     $http.get(surl).success(function(sdata ){
         self.speciesList = sdata.species;
     });
-    $scope.formInfo.blast = 'http://www.ensembl.org/' + self.species + '/Tools/Blast';    
+    $scope.formInfo.blast = $scope.formInfo.eServer + self.species + '/Tools/Blast';    
     var ctrl = this;
     
     // when changing species - change the url of the blast tool                                  
     this.update_blast = function() {
-        $scope.formInfo.blast = 'http://www.ensembl.org/' + ctrl.species + '/Tools/Blast';    
+        $scope.formInfo.blast = $scope.formInfo.restServer + ctrl.species + '/Tools/Blast';    
         $("#blast_form").action = $scope.formInfo.blast;
     };
                                       
@@ -185,7 +192,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         //return;
         if (t.Translation) {
             t.plen = 1;
-            var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
+            var purl = $scope.formInfo.restServer + '/sequence/id/'+t.Translation.id +'?content-type=application/json';
             $http.get(purl).success(function(sdata ){
                 t.protein = sdata.seq;
                 t.plen = sdata.seq.length;
@@ -210,7 +217,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         $scope.clearTags();
         
         // first we look for the gene
-        var url = 'http://rest.ensembl.org/lookup/symbol/'+self.species+'/' + gene
+        var url = $scope.formInfo.restServer + '/lookup/symbol/'+self.species+'/' + gene
                 + '?content-type=application/json;expand=1';
             
         $http.get(url).success(function(data){
@@ -222,11 +229,11 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 $scope.geneInfo.strand_str = 'reverse';
             }
             
-            $scope.geneInfo.url = 'http://www.ensembl.org/'+self.species+'/Gene/Summary?g=' + data.id;
+            $scope.geneInfo.url = $scope.formInfo.restServer + '/'+self.species+'/Gene/Summary?g=' + data.id;
             $scope.loading = true;
             
             // now let's get the sequence
-            var surl = 'http://rest.ensembl.org/sequence/region/'+self.species+'/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
+            var surl = $scope.formInfo.restServer + '/sequence/region/'+self.species+'/' + data.seq_region_name + ':' + data.start + '..' + data.end + ':'+data.strand+'?content-type=application/json';
             $http.get(surl).success(function(seq){
                 
                 
@@ -650,14 +657,14 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         
         
         if (t.Translation) {
-            var purl = 'http://rest.ensembl.org/sequence/id/'+t.Translation.id +'?content-type=application/json';
+            var purl = $scope.formInfo.restServer + '/sequence/id/'+t.Translation.id +'?content-type=application/json';
             
             
             $http.get(purl).success(function(data){
                 t.protein = data.seq;
                 t.pseq = '-' + data.seq.split('').join('--') + '-';
             
-                var curl = 'http://rest.ensembl.org/sequence/id/'+t.id+'?content-type=application/json;type=cds';
+                var curl = $scope.formInfo.restServer + '/sequence/id/'+t.id+'?content-type=application/json;type=cds';
             
                 $http.get(curl).success(function(data){
                     t.cdna = data.seq;
@@ -683,7 +690,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                 });
             
                 
-                var cds = 'http://rest.ensembl.org/map/cds/'+t.id+'/1..3000000?content-type=application/json';
+                var cds = $scope.formInfo.restServer + '/map/cds/'+t.id+'/1..3000000?content-type=application/json';
                 $http.get(cds).success(function(data){
                     var pEnd = -1;
                     var pSeq = t.pseq;
