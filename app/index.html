@@ -23,6 +23,7 @@
 </head>
 <body ng-app="geneInfoApp" data-spy="scroll" data-target="#myScrollspy">
     <a id="top" name="top" href="#"></a>
+    <div ng-controller="geneInfoCtrl as gi">
     <div class="jumbotron">        
         <nav class="navbar navbar-default" role="navigation" ng-controller="menuCtrl as menu">
             <script type="text/ng-template" id="myModalContent.html">
@@ -44,13 +45,19 @@
             <a class="navbar-brand" href="#">geneSpy</a>
             
             <ul class="nav navbar-nav pull-right">
+<li>
+                
+                <select style="height:30px;margin-top:10px;" ng-options="obj.name as obj.label for obj in serverList" ng-model="formInfo.source" ng-change="gi.updateServer()">
+                </select>
+            
+                </li>
                 <li><a href="#" ng-click="menu.show('Contact')">Contact</a></li>
                 <li><a href="#" ng-click="menu.show('About')">About</a></li>
             </ul>            
         </nav>
     </div>
     <div style="display:none;visibility:hidden"><pre id="tmp">ATGC : {{ fontWidth }}</pre> : </div> 
-    <div ng-controller="geneInfoCtrl as gi">
+    
         <div class="row" style="padding-left:20px;padding-right:20px">
             <form>
             <div class="col-xs-3">
@@ -66,6 +73,7 @@
                 <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species" ng-change="gi.update_blast()">
                 </select>
             </div>
+                
             <div ng-show="message" style="text-align:center" ng-cloak>
                 <span style="background-color:pink;margin-top:10px;">{{ message }}</span>
             </div>           

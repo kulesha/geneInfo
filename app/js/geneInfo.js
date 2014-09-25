@@ -120,9 +120,17 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         width: 100, 
         coding: false, 
         restServer: 'http://rest.ensembl.org',
-        eServer: 'http://www.ensembl.org/'
+        eServer: 'http://www.ensembl.org/',
+        source: 'elatest',
+        division: 'ensembl'
     };
-    
+
+    $scope.serverList = [
+        { name: 'elatest', division: 'ensembl', label: 'Ensembl' , url: 'http://rest.ensembl.org', eurl: 'http://www.ensembl.org'},
+        { name: 'egrch37', division: 'ensembl', label: 'Ensembl GRCh37' , url: 'http://grch37.rest.ensembl.org', eurl: 'http://grch37.ensembl.org'}
+// eg reset is too slow        { name: 'eplants', division: 'plants', label: 'Plants' , url: 'http://rest.ensemblgenomes.org', eurl: 'http://plants.ensembl.org'}
+    ];
+                                      
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
 
@@ -140,16 +148,31 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     var self = this;
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
-//gtb                           q14  bbb          http://grch37.rest.ensembl.org
-                                      
-    var surl = $scope.formInfo.restServer + '/info/species?content-type=application/json;division=ensembl';                                   
-    self.species = 'homo_sapiens';   
-    $http.get(surl).success(function(sdata ){
-        self.speciesList = sdata.species;
-    });
-    $scope.formInfo.blast = $scope.formInfo.eServer + self.species + '/Tools/Blast';    
     var ctrl = this;
-    
+                                      
+    this.updateSpecies = function() {                                  
+        var surl = $scope.formInfo.restServer + '/info/species?content-type=application/json;division='+$scope.formInfo.division;                                   
+        self.species = 'homo_sapiens';   
+        $http.get(surl).success(function(sdata ){
+            self.speciesList = sdata.species;
+        });
+        $scope.formInfo.blast = $scope.formInfo.eServer + self.species + '/Tools/Blast';    
+    }
+                           
+    self.updateSpecies();
+                                      
+    this.updateServer = function() {
+        for(var i in $scope.serverList) {
+            if ($scope.serverList[i].name === $scope.formInfo.source) {
+                $scope.formInfo.restServer = $scope.serverList[i].url;
+                $scope.formInfo.eServer = $scope.serverList[i].eurl;            
+                $scope.formInfo.division = $scope.serverList[i].division;
+                self.updateSpecies();
+            }
+        }
+        
+    };
+                                      
     // when changing species - change the url of the blast tool                                  
     this.update_blast = function() {
         $scope.formInfo.blast = $scope.formInfo.restServer + ctrl.species + '/Tools/Blast';    
@@ -207,7 +230,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         
         var gene = $scope.formInfo.gene.toUpperCase();
         if ($window.ga){
-            var path = '/gene/'+gene;            
+            var path = $scope.formInfo.source+'/gene/'+gene;            
             $window.ga('send', 'pageview', { page: path });
         }
     
@@ -267,11 +290,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         if (! ipos) { // this will be set only if validation passes in html
             return;
         }
-
-        //if ($window.ga){
-        //    var path = '/pos/bp';
-        //    $window.ga('send', 'pageview', { page: path });
-        //}
 
         var w = $scope.formInfo.width;
         
