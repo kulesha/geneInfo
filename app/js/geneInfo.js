@@ -197,8 +197,10 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     // function that will be called on form submit
     this.findGene = function() {
+        
+        var gene = $scope.formInfo.gene.toUpperCase();
         if ($window.ga){
-            var path = '/gene/'+$scope.formInfo.gene;            
+            var path = '/gene/'+gene;            
             $window.ga('send', 'pageview', { page: path });
         }
     
@@ -208,7 +210,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         $scope.clearTags();
         
         // first we look for the gene
-        var url = 'http://rest.ensembl.org/lookup/symbol/'+self.species+'/' + $scope.formInfo.gene
+        var url = 'http://rest.ensembl.org/lookup/symbol/'+self.species+'/' + gene
                 + '?content-type=application/json;expand=1';
             
         $http.get(url).success(function(data){
@@ -259,10 +261,10 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             return;
         }
 
-        if ($window.ga){
-            var path = '/pos/bp';
-            $window.ga('send', 'pageview', { page: path });
-        }
+        //if ($window.ga){
+        //    var path = '/pos/bp';
+        //    $window.ga('send', 'pageview', { page: path });
+        //}
 
         var w = $scope.formInfo.width;
         
@@ -319,10 +321,10 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             return;
         }
 
-        if ($window.ga){
-            var path = '/pos/aa';
-            $window.ga('send', 'pageview', { page: path });
-        }        
+        //if ($window.ga){
+        //    var path = '/pos/aa';
+        //    $window.ga('send', 'pageview', { page: path });
+        //}        
         
         var t;
         for(var i in $scope.geneInfo.Transcript) {
