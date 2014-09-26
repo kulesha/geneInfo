@@ -126,8 +126,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
 
     $scope.serverList = [
-        { name: 'elatest', division: 'ensembl', label: 'Ensembl' , url: 'http://rest.ensembl.org', eurl: 'http://www.ensembl.org'},
-        { name: 'egrch37', division: 'ensembl', label: 'Ensembl GRCh37' , url: 'http://grch37.rest.ensembl.org', eurl: 'http://grch37.ensembl.org'}
+        { name: 'elatest', division: 'ensembl', label: 'Ensembl ( GRCh38 )' , url: 'http://rest.ensembl.org', eurl: 'http://www.ensembl.org'},
+        { name: 'egrch37', division: 'ensembl', label: 'Ensembl ( GRCh37 )' , url: 'http://grch37.rest.ensembl.org', eurl: 'http://grch37.ensembl.org'}
 // eg reset is too slow        { name: 'eplants', division: 'plants', label: 'Plants' , url: 'http://rest.ensemblgenomes.org', eurl: 'http://plants.ensembl.org'}
     ];
                                       

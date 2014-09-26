@@ -47,7 +47,7 @@
             <ul class="nav navbar-nav pull-right">
 <li>
                 
-                <select style="height:30px;margin-top:10px;" ng-options="obj.name as obj.label for obj in serverList" ng-model="formInfo.source" ng-change="gi.updateServer()">
+                <span>Source: </span><select style="height:30px;margin-top:10px;" ng-options="obj.name as obj.label for obj in serverList" ng-model="formInfo.source" ng-change="gi.updateServer()">
                 </select>
             
                 </li>
