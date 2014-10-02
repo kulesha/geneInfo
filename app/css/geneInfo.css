@@ -1,10 +1,12 @@
 .exon {
-    background-color: #ffee99;
+    display:inline;
+    color:red;
 }
 
 .tag {
     background-color: #99eeff;
 }
+
 
 a img {
     vertical-align: middle;
@@ -61,6 +63,7 @@ pre {
     padding: 1em;
     padding-bottom:0.1em;
  }
+
 #blast_form {
     background-color: #e0e8ff;
     opacity:1;
@@ -68,3 +71,16 @@ pre {
 }
 
 a.anchor{display: block; position: relative; top: -200px; visibility: hidden;}
+
+.find {
+    display:inline;
+    font-weight: normal;
+    font-size: 1em;
+    background-color: #ffee99;
+
+}
+
+
+.protein {
+    color:#3328C9;
+}
