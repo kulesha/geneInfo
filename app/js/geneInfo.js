@@ -158,6 +158,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             self.speciesList = sdata.species;
         });
         $scope.formInfo.blast = $scope.formInfo.eServer + self.species + '/Tools/Blast';    
+        $scope.geneInfo = {}; 
+
     }
                            
     this.updateServer = function() {
@@ -212,14 +214,11 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
                                       
     $scope.getProtein = function(t) {
-        //return;
         if (t.Translation) {
-            t.plen = 1;
-            var purl = $scope.formInfo.restServer + '/sequence/id/'+t.Translation.id +'?content-type=application/json';
-            $http.get(purl).success(function(sdata ){
-                t.protein = sdata.seq;
-                t.plen = sdata.seq.length;
-            });
+            t.plen = t.Translation.length;
+            if (t.is_canonical === "1") { // longest coding sequence is 80K
+                t.plen += 100000;
+            }
         } else {
             t.plen = 0;
         }
@@ -227,15 +226,18 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     // function that will be called on form submit
     this.findGene = function() {
+        $scope.loading = true;
+        $scope.geneInfo = {};
         
         var gene = $scope.formInfo.gene.toUpperCase();
+        $scope.message = "Looking for " + gene;
+        
         if ($window.ga){
             var path = $scope.formInfo.source+'/gene/'+gene;            
             $window.ga('send', 'pageview', { page: path });
         }
     
         
-        $scope.message = '';
         $scope.formInfo.coding = false;
         $scope.clearTags();
         
@@ -252,7 +254,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 $scope.geneInfo.strand_str = 'reverse';
             }
             
-            $scope.geneInfo.url = $scope.formInfo.restServer + '/'+self.species+'/Gene/Summary?g=' + data.id;
+            $scope.geneInfo.url = $scope.formInfo.eServer + '/'+self.species+'/Gene/Summary?g=' + data.id;
             $scope.loading = true;
             
             // now let's get the sequence
@@ -274,12 +276,15 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             for (var i in data.Transcript) {
                 $scope.getProtein(data.Transcript[i]);
             }
+            $scope.message = '';
             
         }).error(function(data, status, header, config){
             if (status === 400) {
                 $scope.message = data.error;
-            }            
-        });            
+            }
+            $scope.loading = false;
+        });
+        
     };
     
                                       
@@ -359,8 +364,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
      
             var tmp = coding ? t.pseq : t.ppseq;
 //            console.log(t);
-            if (ipos > t.plen) {
-                ctrl.foundSeq = 'Length is only ' + t.plen + ' aa';
+            if (ipos > t.Translation.length) {
+                ctrl.foundSeq = 'Length is only ' + t.Translation.length + ' aa';
                 return;
             }
             

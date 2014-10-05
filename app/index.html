@@ -38,7 +38,7 @@
                 </div>
                 <div class="modal-body" ng-switch on="items[0]">
                     <p ng-switch-when="Contact">All enquires please contact ek@ebi.ac.uk</p>
-                    <p ng-switch-when="About">geneSpy, version 0.4<br/><br/>
+                    <p ng-switch-when="About">geneSpy, version 0.5<br/><br/>
                     Created by <a href="https://www.linkedin.com/in/kulesha">Eugene Kulesha</a> and <a href="https://www.linkedin.com/in/veragrinkevich">Vera Grinkevich</a> <br/><br/>
                     Thanks to Magali Ruffier for updates to e! REST API<br><br/>
                     <i>All enquires please contact ek@ebi.ac.uk</i></p>                    
@@ -74,19 +74,21 @@
                     </span>
                 </div>
             </div>                
+            
             <div class="col-xs-9" style="text-align:right">
                 <span>Species: </span>
                 <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species" ng-change="gi.update_blast()">
                 </select>
             </div>
                 
-            <div ng-show="message" style="text-align:center" ng-cloak>
-                <span style="background-color:pink;margin-top:10px;">{{ message }}</span>
-            </div>           
         </form>
     </div>
+    <div class="raw col-xs-12" ng-show="message" style="text-align:center" ng-cloak>
+                    <span style="background-color:pink;margin-top:10px;">{{ message }}</span>
+    </div>           
+
         
-    <div class="" style="padding-left:20px;padding-right:20px;padding-top:20px" itemscope itemtype="http://schema.org/WebApplication" id="frontpage" ng-hide="geneInfo.id">
+    <div class="" style="padding-left:20px;padding-right:20px;padding-top:20px" itemscope itemtype="http://schema.org/WebApplication" id="frontpage" ng-hide="geneInfo.id || loading">
         <div itemprop="name" ng-hide="1" ng-cloak>geneSpy - tool to help in your genome editing work</div>
         
         <div style="visibility:hidden">Authors:
@@ -188,7 +190,7 @@
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
                                 <li role="presentation" ng-repeat="transcript in geneInfo.Transcript | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
-                                ng-click="tab.setTab(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.Translation">{{transcript.protein.length}} aa</span></a></li>
+                                ng-click="tab.setTab(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.Translation">{{transcript.Translation.length}} aa</span></a></li>
                             </ul>
                             
                         </div>                        
@@ -256,7 +258,6 @@
             </div>  
         </div>
     </div>
-    <div id="home" ng-hide="geneInfo.id !== 1" ng-cloak>Ever needed to see gene and protein sequences side by side ? or find amino acid by its member ? select small dna sequence and run BLAST ?</div>
     <div style="height:30px">&nbsp;</div>
     <div id="footer" class="panel-footer">        
         <div class="container text-center">
