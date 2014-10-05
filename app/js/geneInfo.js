@@ -150,6 +150,15 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
     self.trustedHtml = $sce.trustAsHtml(this.textContent);
     var ctrl = this;
+    
+    this.resetForm = function() {
+        self.foundSeq = '';
+        $scope.currentpTag = -1;
+        $scope.currentTag = -1;
+        $scope.currentpcTag = -1;
+        $scope.currentcTag = -1;    
+        $scope.geneInfo = {};
+    };
                                       
     this.updateSpecies = function() {                                  
         var surl = $scope.formInfo.restServer + '/info/species?content-type=application/json;division='+$scope.formInfo.division;                                   
@@ -158,7 +167,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             self.speciesList = sdata.species;
         });
         $scope.formInfo.blast = $scope.formInfo.eServer + self.species + '/Tools/Blast';    
-        $scope.geneInfo = {}; 
+        self.resetForm(); 
 
     }
                            
