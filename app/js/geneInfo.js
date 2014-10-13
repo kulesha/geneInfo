@@ -141,7 +141,8 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     // by default we'll look for BRCA2, HIST1H4F - smallest
     $scope.formInfo = {
         //gene: 'HIST1H4F', 
-        gene: 'BRCA2',
+        //gene: 'BRCA2',
+        
         width: 100, 
         coding: false, 
         restServer: 'http://rest.ensembl.org',
