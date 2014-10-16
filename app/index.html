@@ -14,6 +14,7 @@
     <link rel="stylesheet" type="text/css" href="css/geneInfo.css?v=0.6">
 
     <!-- added to enable sticky goto box -->
+    <script src="js/sizeof.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
@@ -88,7 +89,7 @@
     </div>           
 
         
-    <div class="" style="padding-left:20px;padding-right:20px;padding-top:20px" itemscope itemtype="http://schema.org/WebApplication" id="frontpage" ng-hide="geneInfo.id || loading">
+    <div class="" style="padding-left:20px;padding-right:20px;padding-top:20px" itemscope itemtype="http://schema.org/WebApplication" id="frontpage" ng-hide="geneData.id || loading">
         <div itemprop="name" ng-hide="1" ng-cloak>geneSpy - tool to help in your genome editing work</div>
         
         <div style="visibility:hidden">Authors:
@@ -116,7 +117,7 @@
     </div>    
         
         
-        <div ng-show="geneInfo.id" ng-controller="TabController as tab" ng-cloak id="data">
+        <div ng-show="geneData.id" ng-controller="TabController as tab" ng-cloak id="data">
         
             <div id="location" style="position: fixed;display:none;z-index:1000;background-color:#333333;padding:5px;opacity:0.9;color:#ffffff;"> {{ location }} </div>            
             
@@ -171,16 +172,16 @@
                 
             <table class="table table-condensed table-striped" style="margin-left:15px;margin-right:15px;">
                 <tr>
-                    <th class="col-xs-2">Gene name</th><td><b>{{geneInfo.display_name}}</b> <em>(Ensembl ID: {{geneInfo.id}} ) </em><a href="{{geneInfo.url}}" target="_blank"><img src="i/e-quest.gif" title="View in Ensembl" /></a></td>
+                    <th class="col-xs-2">Gene name</th><td><b>{{geneData.display_name}}</b> <em>(Ensembl ID: {{geneData.id}} ) </em><a href="{{geneData.url}}" target="_blank"><img src="i/e-quest.gif" title="View in Ensembl" /></a></td>
                 </tr>
                 <tr>
-                    <th>Description</th><td>{{geneInfo.description}}</td>
+                    <th>Description</th><td>{{geneData.description}}</td>
                 </tr>
                 <tr>
-                    <th>Location</th><td>{{geneInfo.seq_region_name}} : {{geneInfo.start | number}} - {{geneInfo.end | number}} <em>{{geneInfo.strand_str}} strand</em></td>
+                    <th>Location</th><td>{{geneData.seq_region_name}} : {{geneData.start | number}} - {{geneData.end | number}} <em>{{geneData.strand > 0 ? 'forward' : 'reverse'}} strand</em></td>
                 </tr>
                 <tr>               
-                    <th>Length</th><td> {{geneInfo.end - geneInfo.start + 1| number}}bp</td>
+                    <th>Length</th><td> {{geneData.end - geneData.start + 1| number}}bp</td>
                 </tr>
                 <tr>
                     <td>
@@ -190,8 +191,8 @@
                                 <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                                <li role="presentation" ng-repeat="transcript in geneInfo.Transcript | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
-                                ng-click="tab.setTab(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.Translation">{{transcript.Translation.length}} aa</span></a></li>
+                                <li role="presentation" ng-repeat="transcript in geneData.tlist | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
+                                ng-click="tab.setTab(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.plen > 0">{{transcript.plen % 100000}} aa</span></a></li>
                             </ul>
                             
                         </div>                        

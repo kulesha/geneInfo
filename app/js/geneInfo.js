@@ -82,7 +82,7 @@ function elementCurrentStyle(element, styleName){
     }
 }
 
-var geneFields = ['start', 'end', 'strand', 'description', 'display_name', 'seq_region_name'];
+var geneFields = ['id', 'start', 'end', 'strand', 'description', 'display_name', 'seq_region_name'];
 var exonStart = "<div class='exon'>";
 var exonEnd = "</div>";
 
@@ -217,6 +217,23 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             
         $http.get(url).success(function(data){
             // hooray - we have found the gene
+            geneFields.map(function(item) {
+                $scope.geneData[item] = data[item];
+            });
+            $scope.geneData.tlist = [];
+            
+            for (var i in data.Transcript) {
+                var t = data.Transcript[i];
+                var to = {id: t.id, plen: 0};
+                if (t.Translation) {
+                    to.plen = t.Translation.length;
+                    if (t.is_canonical === "1") { // longest coding sequence is 80K
+                        to.plen += 100000;
+                    }
+                }
+                $scope.geneData.tlist.push(to);
+            }
+            
             $scope.geneInfo = data;
             if ($scope.geneInfo.strand === 1) {
                 $scope.geneInfo.strand_str = 'forward';
@@ -241,6 +258,9 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 $scope.geneInfo.sequence = seq;
                 $scope.geneInfo.segments = s;
                 $scope.loading = false;  
+                console.log($scope.geneData);
+                console.log(sizeof($scope.geneData));
+                console.log(sizeof($scope.geneInfo));
             });
             
             for (var i in data.Transcript) {
