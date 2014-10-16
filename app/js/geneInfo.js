@@ -82,6 +82,7 @@ function elementCurrentStyle(element, styleName){
     }
 }
 
+var geneFields = ['start', 'end', 'strand', 'description', 'display_name', 'seq_region_name'];
 var exonStart = "<div class='exon'>";
 var exonEnd = "</div>";
 
@@ -95,48 +96,13 @@ var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filte
         }
     });
     
-myApp.controller('menuCtrl', ['$scope', '$modal', function ($scope, $modal) {
-    var ctrl = this;
-    $scope.items = [];
-    this.show = function (topic) {   
-    $scope.items[0] = topic;
-    
-    var modalInstance = $modal.open({
-        templateUrl: 'myModalContent.html',        
-        controller: ModalInstanceCtrl,
-        resolve: {
-            items: function () {
-                return $scope.items;
-            }
-        }
-    });
-  };
-}]);
-
-var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
-    $scope.items = items;
-    $scope.ok = function () {
-        $modalInstance.close();
-    };
-};
 // main controller - it accepts the input gene name and fetches the gene info
 myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', '$window', 
                                   function ($scope, $http, $sce, $location, $anchorScroll, $window) {
 
-    $scope.message = '';
-    $scope.location = 0;
-    if ($window.ga){
-        var path = '/';
-        $window.ga('send', 'pageview', { page: path });
-    }
-    
-                                      
-    $scope.baseCount = function(str) {
-        if(str) {            
-            return str.split(/[A-Z]/).length - 1;
-        }
-        return 1;
-    };
+    var self = this;
+    // to enable html in ng-bind - used in sequence display                                  
+    self.trustedHtml = $sce.trustAsHtml(this.textContent);                                    
                                       
     // by default we'll look for BRCA2, HIST1H4F - smallest
     $scope.formInfo = {
@@ -156,27 +122,38 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         { name: 'egrch37', division: 'ensembl', label: 'Ensembl ( GRCh37 )' , url: 'http://grch37.rest.ensembl.org', eurl: 'http://grch37.ensembl.org'}
 // eg reset is too slow        { name: 'eplants', division: 'plants', label: 'Plants' , url: 'http://rest.ensemblgenomes.org', eurl: 'http://plants.ensembl.org'}
     ];
-        
+    
                                       
-    // the rest api call will fill this object
-    $scope.geneInfo = {}; 
+    this.reset = function() {
+        $scope.message = '';
+        $scope.location = 0;
+        if ($scope.geneData) {
+            for (var i in $scope.geneData) {
+                $scope.geneData[i] = '';
+            }
+        }
+        $scope.geneData = {};
+    };
 
-    // get the font used to display sequence
-    var el = document.getElementById('tmp');    
-    var font = elementCurrentStyle(el,"font-variant") + " " + elementCurrentStyle(el,"font-size") + " " + elementCurrentStyle(el,"font-family");
+    this.getFontWidth = function() {
+// get the font used to display sequence
+        var el = document.getElementById('tmp');    
+        var font = elementCurrentStyle(el,"font-variant") + " " + elementCurrentStyle(el,"font-size") + " " + elementCurrentStyle(el,"font-family");
 
     // need to use the same length as the display window, otherwise IE gives rounded values                                  
-    var text = repeat('A', $scope.formInfo.width);
+        var text = repeat('A', $scope.formInfo.width);
 
     // get the font width
-    $scope.fontWidth = getTextWidth(text, font) / $scope.formInfo.width;
+        $scope.fontWidth = getTextWidth(text, font) / $scope.formInfo.width;
+    };
+    
+    this.recordVisit = function(path) {                                  
+        if ($window.ga){
+            $window.ga('send', 'pageview', { page: path });
+        }
+    };
+                                          
 
-    $scope.currentSelect = { start: -1, stop: -1 };                                  
-    var self = this;
-    
-    self.trustedHtml = $sce.trustAsHtml(this.textContent);
-    var ctrl = this;
-    
     this.resetForm = function() {
         self.foundSeq = '';
         $scope.currentpTag = -1;
@@ -194,9 +171,10 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         });
         $scope.formInfo.blast = $scope.formInfo.eServer + self.species + '/Tools/Blast';    
         self.resetForm(); 
+        self.reset();
 
     }
-                           
+                                      
     this.updateServer = function() {
         for(var i in $scope.serverList) {
             if ($scope.serverList[i].name === $scope.formInfo.source) {
@@ -208,69 +186,26 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         }
         
     };
-    self.updateServer();
+                                          
                                       
-    // when changing species - change the url of the blast tool                                  
-    this.update_blast = function() {
-        $scope.formInfo.blast = $scope.formInfo.restServer + ctrl.species + '/Tools/Blast';    
-        $("#blast_form").action = $scope.formInfo.blast;
-    };
+    self.getFontWidth();                                                              
+    self.updateServer();                                      
+    self.recordVisit("/");
                                       
-    $scope.clearTags = function() {
-        ctrl.foundSeq = '';
-        
-        if ($scope.currentTag > -1) {
-            var tmp = $scope.geneInfo.segments[$scope.currentTag];
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.segments[$scope.currentTag] = tmp;
-        }
-        
-        if ($scope.currentcTag > -1) {
-            var tmp = $scope.geneInfo.csegments[$scope.currentcTag];
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.csegments[$scope.currentcTag] = tmp;
-        }
-        
-        if ($scope.currentpTag > -1) {
-            var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.psegments[$scope.currentpTag] = tmp;
-        }
-        if ($scope.currentpcTag > -1) {
-            var tmp = $scope.geneInfo.pcsegments[$scope.currentpcTag];            
-            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
-            $scope.geneInfo.pcsegments[$scope.currentpcTag] = tmp;
-        }
-        
-        $scope.currentpTag = -1;
-        $scope.currentTag = -1;
-        $scope.currentpcTag = -1;
-        $scope.currentcTag = -1;    
-    };
-                                      
-    $scope.getProtein = function(t) {
-        if (t.Translation) {
-            t.plen = t.Translation.length;
-            if (t.is_canonical === "1") { // longest coding sequence is 80K
-                t.plen += 100000;
-            }
-        } else {
-            t.plen = 0;
-        }
-    };
+
                                       
     // function that will be called on form submit
     this.findGene = function() {
+        self.reset();
         $scope.loading = true;
+        
+        
         $scope.geneInfo = {};
         
         var gene = $scope.formInfo.gene.toUpperCase();
         $scope.message = "Looking for " + gene;
-        
-        if ($window.ga){
-            var path = $scope.formInfo.source+'/gene/'+gene;            
-            $window.ga('send', 'pageview', { page: path });
-        }
+
+        self.recordVisit($scope.formInfo.source+'/gene/'+gene);
     
         
         $scope.formInfo.coding = false;
@@ -321,6 +256,84 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         });
         
     };
+                                      
+                                      
+                                      
+    $scope.baseCount = function(str) {
+        if(str) {            
+            return str.split(/[A-Z]/).length - 1;
+        }
+        return 1;
+    };
+          
+                                      
+
+        
+                                      
+    // the rest api call will fill this object
+    $scope.geneInfo = {}; 
+
+    
+                                      
+    
+    $scope.currentSelect = { start: -1, stop: -1 };                                  
+    
+    
+    var ctrl = this;
+    
+                                      
+                           
+    
+                                      
+    // when changing species - change the url of the blast tool                                  
+    this.update_blast = function() {
+        $scope.formInfo.blast = $scope.formInfo.restServer + ctrl.species + '/Tools/Blast';    
+        $("#blast_form").action = $scope.formInfo.blast;
+    };
+                                      
+    $scope.clearTags = function() {
+        ctrl.foundSeq = '';
+        
+        if ($scope.currentTag > -1) {
+            var tmp = $scope.geneInfo.segments[$scope.currentTag];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.segments[$scope.currentTag] = tmp;
+        }
+        
+        if ($scope.currentcTag > -1) {
+            var tmp = $scope.geneInfo.csegments[$scope.currentcTag];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.csegments[$scope.currentcTag] = tmp;
+        }
+        
+        if ($scope.currentpTag > -1) {
+            var tmp = $scope.geneInfo.psegments[$scope.currentpTag];            
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.psegments[$scope.currentpTag] = tmp;
+        }
+        if ($scope.currentpcTag > -1) {
+            var tmp = $scope.geneInfo.pcsegments[$scope.currentpcTag];            
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneInfo.pcsegments[$scope.currentpcTag] = tmp;
+        }
+        
+        $scope.currentpTag = -1;
+        $scope.currentTag = -1;
+        $scope.currentpcTag = -1;
+        $scope.currentcTag = -1;    
+    };
+                                      
+    $scope.getProtein = function(t) {
+        if (t.Translation) {
+            t.plen = t.Translation.length;
+            if (t.is_canonical === "1") { // longest coding sequence is 80K
+                t.plen += 100000;
+            }
+        } else {
+            t.plen = 0;
+        }
+    };
+                                      
     
                                       
     this.findBP = function(tab) {
@@ -1030,3 +1043,27 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     }
 }]);
 
+myApp.controller('menuCtrl', ['$scope', '$modal', function ($scope, $modal) {
+    var ctrl = this;
+    $scope.items = [];
+    this.show = function (topic) {   
+    $scope.items[0] = topic;
+    
+    var modalInstance = $modal.open({
+        templateUrl: 'myModalContent.html',        
+        controller: ModalInstanceCtrl,
+        resolve: {
+            items: function () {
+                return $scope.items;
+            }
+        }
+    });
+  };
+}]);
+
+var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
+    $scope.items = items;
+    $scope.ok = function () {
+        $modalInstance.close();
+    };
+};
