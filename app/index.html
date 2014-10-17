@@ -212,19 +212,19 @@
                                         
                     <div ng-hide="formInfo.coding == true">
                         <table>
-                            <tr class="sequence" ng-repeat="segment in geneInfo.segments track by $index">
+                            <tr class="sequence" ng-repeat="segment in geneData.segments track by $index">
                                 <td>
                                     <a class="anchor" id="a_{{$index}}"></a> 
                                     <table class="table-condensed">
-                                        <tr ng-show="geneInfo.psegments[$index].indexOf('-') > -1">
-                                            <td class="num">{{geneInfo.isegments[$index]}}:</td>
-                                            <td><pre><span class="protein" ng-bind-html="geneInfo.psegments[$index]"></span></pre></td>
-                                            <td class="num">:{{ geneInfo.isegments[$index] + baseCount(geneInfo.psegments[$index]) -1 }}</td>
+                                        <tr ng-show="geneData.psegments[$index].indexOf('-') > -1">
+                                            <td class="num">{{geneData.isegments[$index]}}:</td>
+                                            <td><pre><span class="protein" ng-bind-html="geneData.psegments[$index]"></span></pre></td>
+                                            <td class="num">:{{ geneData.isegments[$index] + baseCount(geneData.psegments[$index]) -1 }}</td>
                                         </tr>
                                         <tr>
                                             <td class="num">{{ ($index * formInfo.width) + 1 | number }}</td>
-                                            <td ng-click="tab.click()" ng-dblclick="tab.click()" ng-mousedown="tab.start_select($event, $index, 'bp')" ng-mouseup="tab.stop_select($event, $index, 'bp')" ng-mouseleave="tab.untrack()" ng-mousemove="tab.track($event, $index, 'bp')"><pre ><span ng-bind-html="geneInfo.segments[$index]"></span></pre></td>
-                                            <td class="num">{{ ($index * formInfo.width) + baseCount(geneInfo.segments[$index]) | number }}</td>
+                                            <td ng-click="tab.click()" ng-dblclick="tab.click()" ng-mousedown="tab.start_select($event, $index, 'bp')" ng-mouseup="tab.stop_select($event, $index, 'bp')" ng-mouseleave="tab.untrack()" ng-mousemove="tab.track($event, $index, 'bp')"><pre ><span ng-bind-html="geneData.segments[$index]"></span></pre></td>
+                                            <td class="num">{{ ($index * formInfo.width) + baseCount(geneData.segments[$index]) | number }}</td>
                                         </tr>
                                     </table>
                                 </td>
