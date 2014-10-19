@@ -109,7 +109,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     $scope.formInfo = {
         //gene: 'HIST1H4F', 
         //gene: 'BRCA2',
-        
+        gene: 'TP53',
         width: 100, 
         coding: false, 
         restServer: 'http://rest.ensembl.org',
@@ -130,11 +130,13 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
     $scope.resetSequence = function() {
         if ($scope.geneData) {
-            if ($scope.geneData.dna) {
+            var sequence = $scope.formInfo.coding ? $scope.geneData.cdna : $scope.geneData.dna;
+            console.log("SEQ: " + sequence.length);
+            if (sequence) {
                 var w = $scope.formInfo.width;
                 var restr = ".{1,"+w+"}";
                 var re = new RegExp(restr,'g');
-                var s = $scope.geneData.dna.match(re);
+                var s = sequence.match(re);
                 $scope.geneData.segments = s;
             }
         }
@@ -148,12 +150,14 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 for (var i in $scope.geneData.tlist) {
                     $scope.geneData.tlist[i].id = null;
                     $scope.geneData.tlist[i].plen = null;
-                    $scope.geneData.tlist[i].Exon = [];
+                    $scope.geneData.tlist[i].Exon = [];                    
                 }    
             }
             $scope.geneData.segments = [];
             $scope.geneData.psegments = [];
             $scope.geneData.isegments = [];
+            $scope.geneData.mappings = [];
+            
             
             for (var i in $scope.geneData) {
                 $scope.geneData[i] = null;
@@ -924,18 +928,37 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         var gEnd = $scope.geneData.end;
         var w = $scope.formInfo.width;
         var segments = $scope.geneData.segments;
-            
-        for(var i in t.Exon) {
-            var s = (gStrand < 0) ? gEnd - t.Exon[i].end : t.Exon[i].start - gStart;
-            var e = (gStrand < 0) ? gEnd - t.Exon[i].start +1 : t.Exon[i].end - gStart + 1;
+        var coding = $scope.formInfo.coding;
         
+        if (coding) {
+            $scope.geneData.segments = segments.map(function(item) {
+                return exonStart + item + exonEnd;
+            });
+            return;
+        }
+        var s = 0;
+        var e = -1;
+        console.log("SEGMENTS : " + segments.length);
+        var exons = t.Exon;
+        
+        for(var i in exons) {
+            console.log( exons[i].start + " - " +  exons[i].end);
+            if (coding) {
+                e = exons[i].end;
+                s = exons[i].start;
+            } else {
+                s = (gStrand < 0) ? gEnd - t.Exon[i].end : t.Exon[i].start - gStart;
+                e = (gStrand < 0) ? gEnd - t.Exon[i].start +1 : t.Exon[i].end - gStart + 1;
+            }
             //console.log(t.Exon[i].id + ' : ' + s + ' ... ' + e);
             var sbin = Math.floor(s / w);
             var spos = s % w;
             var ebin = Math.floor(e / w);
             var epos = e % w;
-            
-            //console.log(s + '['+sbin+':'+spos+']'+' .. ' + e+ '['+ebin+':'+epos+']');
+        
+            if (coding) {
+                console.log(s + '['+sbin+':'+spos+']'+' .. ' + e+ '['+ebin+':'+epos+']');
+            }
             var tmp = segments[sbin];
             var str = tmp.substr(0, spos) + exonStart + tmp.substr(spos);
             $scope.geneData.segments[sbin] = str;
@@ -948,7 +971,8 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
             epos = epos + exonStart.length;
             var str = tmp.substr(0, epos) + exonEnd + tmp.substr(epos);
             $scope.geneData.segments[ebin] = str;    
-        }          
+        }       
+        
     
     };
                                        
@@ -966,18 +990,26 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                     var gStart = $scope.geneData.start;
                     var gEnd = $scope.geneData.end;
                     var pseq = '';
+                    var coding = $scope.formInfo.coding;
                     
-                    for(var i in data.mappings) {
-                        if (data.mappings[i].gap === 0) {
-                            var s = (gStrand < 0) ? gEnd - data.mappings[i].end : data.mappings[i].start - gStart;
-                            var e = (gStrand < 0) ? gEnd - data.mappings[i].start : data.mappings[i].end - gStart;
-                            pseq = pseq + repeat(' ', s - pEnd - 1);
-                            var len = e - s + 1;
+                    if (coding) {
+                        pseq = pSeq;                        
+                    } else {
+                        var s = 0;
+                        var e = -1;
+                    
+                        for(var i in data.mappings) {
+                            if (data.mappings[i].gap === 0) {
+                                s = (gStrand < 0) ? gEnd - data.mappings[i].end : data.mappings[i].start - gStart;
+                                e = (gStrand < 0) ? gEnd - data.mappings[i].start : data.mappings[i].end - gStart;
+                                pseq = pseq + repeat(' ', s - pEnd - 1);
+                                var len = e - s + 1;
                             
-                            pseq = pseq + pSeq.substr(0, len);
-                            pSeq = pSeq.substr(len);
-                            pEnd = e;
-                        }                                             
+                                pseq = pseq + pSeq.substr(0, len);
+                                pSeq = pSeq.substr(len);
+                                pEnd = e;
+                            }                                             
+                        }
                     }
                     
                     //console.log(mappings);
@@ -1005,6 +1037,14 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         
             
     };
+
+    this.getCDNA = function(t) {
+        var url = $scope.formInfo.restServer + '/sequence/id/'+t.id+'?content-type=application/json;type=cds';
+        
+        $http.get(url).success(function(data){
+            $scope.geneData.cdna = data.seq;
+        });
+    };
                                        
     this.selectTranscript = function(transcriptId) {
         if (transcriptId) {
@@ -1018,6 +1058,10 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
             }
         }
     
+        if (t.pid) {
+            self.getCDNA(t);
+        }
+        
         $scope.resetSequence();
         $scope.markupExons(t);
         if (t.pid) {

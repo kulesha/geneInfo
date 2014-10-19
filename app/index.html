@@ -210,7 +210,8 @@
                         Loading sequence ...
                     </div>                    
                                         
-                    <div ng-hide="formInfo.coding == true">
+                    <div>
+                        <div ng-hide="tab.currentTab === '-' || tab.hasTranslation()" class="warn">This transcript does not code for any proteins.</div>
                         <table>
                             <tr class="sequence" ng-repeat="segment in geneData.segments track by $index">
                                 <td>
@@ -232,7 +233,7 @@
                         </table>
                     </div>
 
-                    <div ng-show="formInfo.coding == true">
+                    <!--div ng-show="formInfo.coding == true">
                         <div ng-hide="tab.hasTranslation()" class="warn">This transcript does not code for any proteins.</div>
                         <table ng-show="tab.hasTranslation()">
                             <tr class="sequence" ng-repeat="segment in geneInfo.csegments track by $index">
@@ -254,7 +255,7 @@
                                 </td>
                             </tr>
                         </table>
-                    </div>
+                    </div-->
 
                 
             </div>  
