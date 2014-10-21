@@ -104,7 +104,34 @@ var myApp = angular.module('geneSpyApp', ['ngSanitize', 'ui.bootstrap']) .filter
             return 0;
         }
     });
+
+
+myApp.controller('menuCtrl', ['$scope', '$modal', function ($scope, $modal) {
+    var ctrl = this;
+    $scope.items = [];
+    this.show = function (topic) {   
+    $scope.items[0] = topic;
     
+    var modalInstance = $modal.open({
+        templateUrl: 'myModalContent.html',        
+        controller: ModalInstanceCtrl,
+        resolve: {
+            items: function () {
+                return $scope.items;
+            }
+        }
+    });
+  };
+}]);
+
+var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
+    $scope.items = items;
+    $scope.ok = function () {
+        $modalInstance.close();
+    };
+};
+
+
 // main controller - it accepts the input gene name and fetches the gene info
 myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', '$window', 
                                   function ($scope, $http, $sce, $location, $anchorScroll, $window) {
@@ -842,28 +869,3 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         return false;
     }
 }]);
-
-myApp.controller('menuCtrl', ['$scope', '$modal', function ($scope, $modal) {
-    var ctrl = this;
-    $scope.items = [];
-    this.show = function (topic) {   
-    $scope.items[0] = topic;
-    
-    var modalInstance = $modal.open({
-        templateUrl: 'myModalContent.html',        
-        controller: ModalInstanceCtrl,
-        resolve: {
-            items: function () {
-                return $scope.items;
-            }
-        }
-    });
-  };
-}]);
-
-var ModalInstanceCtrl = function ($scope, $modalInstance, items) {
-    $scope.items = items;
-    $scope.ok = function () {
-        $modalInstance.close();
-    };
-};
