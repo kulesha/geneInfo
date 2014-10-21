@@ -3,7 +3,9 @@ var exonStart = '<div class="exon">';
 var exonEnd = '</div>';
 var foundStart = '<span class="tag">';
 var foundEnd = '</span>';
-
+var markStart = '<h5 class="mark">';
+var markEnd= '</h5>';
+        
 String.prototype.getDNAPos = function(pos) {
     return this.split(/[A-Z]/, pos).join('X').length;                      
 }
@@ -135,6 +137,17 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         $scope.currentAA = [];
     };
     
+    $scope.resetMarkup = function() {
+        for (var i in $scope.geneData.segments) {
+            var tmp = $scope.geneData.segments[i];
+            var re = new RegExp('\<h5 class=\"find\">','g');
+            var re2 = new RegExp('\<\/h5\>','g');
+            var tmp2 = tmp.replace(re, '');
+            var tmp3 = tmp2.replace(re2, '');
+            $scope.geneData.segments[i] = tmp3;            
+        }
+    };
+                                      
     $scope.resetSequence = function() {
         if ($scope.geneData) {
             var sequence = $scope.formInfo.coding ? $scope.geneData.cdna : $scope.geneData.dna;
@@ -414,7 +427,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             if (rightPos - leftPos == 2) {
                 foundExtra = foundExtra + 'in exon ' + bpPos.exon;
             } else { // split between exons
-                foundExtra = foundExtra + 'in exons ' + (bpPos.exon + 1) + ' and ' + (i+1);
+                foundExtra = foundExtra + 'in exons ' + bpPos.exon + ' and ' + (bpPos.exon + 1);
             }
             
             // now markup the aa in the genomic sequence
@@ -439,8 +452,133 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
 
                                       
-                                      
+    this.findBP = function(tab) {
+        $scope.resetFound();
+        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
+        if (! ipos) { // this will be set only if validation passes in html
+            return;
+        }
+
+        var w = $scope.formInfo.width;
+        
+        var coding = $scope.formInfo.coding;
+        var sequence = coding ? $scope.geneData.cdna : $scope.geneData.dna;
+              
+        if (ipos > sequence.length) {
+            self.foundSeq = 'Length is only ' + sequence.length + ' bp';
+            return;
+        }
+            
+        var pos = sequence.getDNAPos(ipos); 
+        
+        var sbin = Math.floor(pos / w); // bin number
+        var spos = pos % w; // position within bin
+        
+        var binseq = $scope.geneData.segments[sbin];
+        
+        var binpos = binseq.getDNAPos(spos +1);
+        var bp = binseq.substr(binpos, 1);
+        var str = binseq.substr(0, binpos) + foundStart + bp  + foundEnd + binseq.substr(binpos+1);
+        self.foundSeq = "Found bp: " + bp;
+        
+        $scope.geneData.segments[sbin] = str;        
+        $scope.currentTag = sbin;
+        
+        $location.hash('a_'+sbin);
+        $anchorScroll();
+    };
+
+                                      
+    this.markDNAMulti = function(coding, s, e, mark) {
+        var w = $scope.formInfo.width;
+        var sbin = Math.floor(s / w);
+        var spos = s % w;
+        var ebin = Math.floor(e / w);
+        var epos = e % w;
+  //      console.log(s + ' ... ' + e);
+//        console.log(" * " + sbin + ' [' + spos + ']' + '..' + ebin + ' [' + epos + ']');            
+        
+        var tagStart = '<h5 class="find">';
+        var tagEnd= '</h5>';
+        
+        var segments = $scope.geneData.segments;
+        var tmp;
+        
+        tmp = segments[sbin];        
+        var ppos = tmp.split(/[A-Z]/, spos+1).join('X').length;            
+//        console.log(ppos);
+        var str = tmp.substr(0, ppos) + tagStart + tmp.substr(ppos);
+//        console.log(str);
+            
+        $scope.geneData.segments[sbin] = str;
+            
+        while (sbin < ebin) {
+//            console.log( "SBIN : " + sbin);
+            var epos2 = str.split(/[A-Z]/, w).join('X').length +1;            
+//            console.log("epos " + epos2);
+                
+            var str2 = str.substr(0, epos2) + tagEnd + str.substr(epos2);
+//            console.log(str2);
+        
+                   
+            var str5 = str2.replace(/<h5 class="find">([A-Z]*)<div class="exon">/g,'<h5 class="find">$1</h5><div class="exon"><h5 class="find">');
+                //console.log("S5:" + str5);
+            var str6 = str5.replace(/<h5 class="find">([A-Z]*)<\/div>/g,'<h5 class="find">$1</h5><\/div><h5 class="find">');
+        
+            
+            $scope.geneData.segments[sbin] = str6;
+            sbin++;
+            
+            var sspos = $scope.geneData.segments[sbin].getDNAPos(1);
+//                console.log("sspos " + sspos);
+            var str3 = $scope.geneData.segments[sbin].substr(0, sspos) + tagStart + $scope.geneData.segments[sbin].substr(sspos);
+//                console.log(str3);
+            $scope.geneData.segments[sbin] = str3;
+            str = str3;
+        }
+            
+        var tmp2 = segments[ebin];
+            
+//        console.log("TMP2: " + tmp2);
+//            console.log(epos);
+            ppos = tmp2.split(/[A-Z]/, epos+1).join('X').length;            
+//            console.log(ppos);
+            
+            var str2 = tmp2.substr(0, ppos) + tagEnd + tmp2.substr(ppos);
+//            console.log("S2:"+str2);
+            var str5 = str2.replace(/<h5 class="find">([A-Z]*)<div class="exon">/g,'<h5 class="find">$1</h5><div class="exon"><h5 class="find">');
+//            console.log("S5:" + str5);
+            var str6 = str5.replace(/<h5 class="find">([A-Z]*)<\/div>/g,'<h5 class="find">$1</h5><\/div><h5 class="find">');
+//            console.log("S6:" + str6);
+            $scope.geneData.segments[ebin] = str6;                                    
+            
+        
+    };
+                                      
+    this.findDNA = function() {
+        $scope.resetMarkup();
+        
+        var ostr = $scope.formInfo.pos.toUpperCase();
+        var coding = $scope.formInfo.coding;
+        var str = coding ? $scope.geneData.cdna : $scope.geneData.dna;
+        var index, startIndex, indices = [];
+        var searchStrLen = ostr.length;
+        var count = 0;
+        
+        while ((index = str.indexOf(ostr, startIndex)) > -1) {
+            var s = index;
+            var e = index + searchStrLen;
+            self.markDNAMulti(coding, s, e, 'mark');
+            count ++;            
+            startIndex = index + searchStrLen;
+        }
+        self.foundSeq = 'Found '+ count + ' matches';        
+    };
+
+                                      
+                                      
+                                      
                                       
     // the rest api call will fill this object
     $scope.geneInfo = {}; 
@@ -508,68 +646,9 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                                       
     
                                       
-    this.findBP = function(tab) {
-        $scope.resetFound();
-        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
-        
-        if (! ipos) { // this will be set only if validation passes in html
-            return;
-        }
-
-        var w = $scope.formInfo.width;
-        
-        var coding = $scope.formInfo.coding;
-        var sequence = coding ? $scope.geneData.cdna : $scope.geneData.dna;
-              
-        if (ipos > sequence.length) {
-            self.foundSeq = 'Length is only ' + sequence.length + ' bp';
-            return;
-        }
-            
-        var pos = sequence.getDNAPos(ipos); 
-        
-        var sbin = Math.floor(pos / w); // bin number
-        var spos = pos % w; // position within bin
-        
-        var binseq = $scope.geneData.segments[sbin];
-        
-        var binpos = binseq.getDNAPos(spos +1);
-        var bp = binseq.substr(binpos, 1);
-        var str = binseq.substr(0, binpos) + foundStart + bp  + foundEnd + binseq.substr(binpos+1);
-        self.foundSeq = "Found bp: " + bp;
-        
-        $scope.geneData.segments[sbin] = str;        
-        $scope.currentTag = sbin;
-        
-        $location.hash('a_'+sbin);
-        $anchorScroll();
-    };
     
                                       
             
-    this.clearMarkup = function() {
-        var coding = $scope.formInfo.coding;
-        if (coding) {
-            for (var i in $scope.geneInfo.csegments) {
-                var tmp = $scope.geneInfo.csegments[i];
-                var re = new RegExp('\<h5 class=\"find\">','g');
-                var re2 = new RegExp('\<\/h5\>','g');
-                var tmp2 = tmp.replace(re, '');
-                var tmp3 = tmp2.replace(re2, '');
-                $scope.geneInfo.csegments[i] = tmp3;            
-            }
-        } else {
-            for (var i in $scope.geneInfo.segments) {
-                var tmp = $scope.geneInfo.segments[i];
-                var re = new RegExp('\<h5 class=\"find\">','g');
-                var re2 = new RegExp('\<\/h5\>','g');
-                var tmp2 = tmp.replace(re, '');
-                var tmp3 = tmp2.replace(re2, '');
-                $scope.geneInfo.segments[i] = tmp3;            
-            }
-        }
-        
-    };
 
     this.OldclearMarkup = function() {
         var coding = $scope.formInfo.coding;
@@ -592,98 +671,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
                                       
                                       
-    this.markDNAMulti = function(coding, s, e, mark) {
-        var w = $scope.formInfo.width;
-        var sbin = Math.floor(s / w);
-        var spos = s % w;
-        var ebin = Math.floor(e / w);
-        var epos = e % w;
-  //      console.log(s + ' ... ' + e);
-//        console.log(" * " + sbin + ' [' + spos + ']' + '..' + ebin + ' [' + epos + ']');            
-        
-        var tagStart = '<h5 class="find">';
-        var tagEnd= '</h5>';
-        
-        var segments;
-        var tmp;
-        
-        if (coding) {
-            segments = $scope.geneInfo.csegments;
-            
-        } else {
-            segments = $scope.geneInfo.segments;            
-        }
-        tmp = segments[sbin];        
-        var ppos = tmp.split(/[A-Z]/, spos+1).join('X').length;            
-//        console.log(ppos);
-        var str = tmp.substr(0, ppos) + tagStart + tmp.substr(ppos);
-//        console.log(str);
-            
-        if (coding) {
-            $scope.geneInfo.csegments[sbin] = str;
-        } else {
-            $scope.geneInfo.segments[sbin] = str;
-        }
-            
-        while (sbin < ebin) {
-//            console.log( "SBIN : " + sbin);
-            var epos2 = str.split(/[A-Z]/, w).join('X').length +1;            
-//            console.log("epos " + epos2);
-                
-            var str2 = str.substr(0, epos2) + tagEnd + str.substr(epos2);
-//            console.log(str2);
-        
-                   
-            var str5 = str2.replace(/<h5 class="find">([A-Z]*)<div class="exon">/g,'<h5 class="find">$1</h5><div class="exon"><h5 class="find">');
-                //console.log("S5:" + str5);
-            var str6 = str5.replace(/<h5 class="find">([A-Z]*)<\/div>/g,'<h5 class="find">$1</h5><\/div><h5 class="find">');
-        
-            
-            if (coding) {
-                $scope.geneInfo.csegments[sbin] = str6;
-            } else {
-                $scope.geneInfo.segments[sbin] = str6;
-            }
-            sbin++;
-            
-            if (coding) {
-                var sspos = $scope.geneInfo.csegments[sbin].split(/[A-Z]/, 1).join('X').length;
-//                console.log("sspos " + sspos);
-                var str3 = $scope.geneInfo.csegments[sbin].substr(0, sspos) + tagStart + $scope.geneInfo.csegments[sbin].substr(sspos);
-//                console.log(str3);
-                $scope.geneInfo.csegments[sbin] = str3;
-                str = str3;
-            } else {
-                var sspos = $scope.geneInfo.segments[sbin].split(/[A-Z]/, 1).join('X').length;
-//                console.log("sspos " + sspos);
-                var str3 = $scope.geneInfo.segments[sbin].substr(0, sspos) + tagStart + $scope.geneInfo.segments[sbin].substr(sspos);
-//                console.log(str3);
-                $scope.geneInfo.segments[sbin] = str3;
-                str = str3;
-            }
-        }
-            
-        var tmp2 = segments[ebin];
-            
-//        console.log("TMP2: " + tmp2);
-//            console.log(epos);
-            ppos = tmp2.split(/[A-Z]/, epos+1).join('X').length;            
-//            console.log(ppos);
-            
-            var str2 = tmp2.substr(0, ppos) + tagEnd + tmp2.substr(ppos);
-//            console.log("S2:"+str2);
-            var str5 = str2.replace(/<h5 class="find">([A-Z]*)<div class="exon">/g,'<h5 class="find">$1</h5><div class="exon"><h5 class="find">');
-//            console.log("S5:" + str5);
-            var str6 = str5.replace(/<h5 class="find">([A-Z]*)<\/div>/g,'<h5 class="find">$1</h5><\/div><h5 class="find">');
-//            console.log("S6:" + str6);
-            if (coding) {
-                $scope.geneInfo.csegments[ebin] = str6;                                    
-            } else {
-                $scope.geneInfo.segments[ebin] = str6;                                    
-            }
-        
-        
-    };
 
 // to mark the whole matched substring is not trivial as markups clash especially on the edge of exon/intron
 // lets see if just marking the first matched char will suffice                                      
@@ -712,28 +699,6 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     };
     
                                       
-    this.findDNA = function() {
-        self.clearMarkup();
-        
-        var ostr = $scope.formInfo.pos.toUpperCase();
-        var coding = $scope.formInfo.coding;
-        var str = coding ? $scope.geneInfo.cdna : $scope.geneInfo.sequence.seq;
-        var index, startIndex, indices = [];
-        var searchStrLen = ostr.length;
-        var w = $scope.formInfo.width;
-        var tagStart = '<h5 class="mark">';
-        var tagEnd= '</h5>';
-        var count = 0;
-        
-        while ((index = str.indexOf(ostr, startIndex)) > -1) {
-            var s = index;
-            var e = index + searchStrLen;
-            self.markDNAMulti(coding, s, e, 'mark');
-            count ++;            
-            startIndex = index + searchStrLen;
-        }
-        ctrl.foundSeq = 'Found '+ count + ' matches';        
-    };
                                       
     this.findSeq = function() {
         var arr = $.grep($scope.markup, function( e, i ) {
