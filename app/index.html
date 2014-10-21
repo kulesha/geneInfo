@@ -191,7 +191,7 @@
                                 <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                                <li role="presentation" ng-repeat="transcript in geneData.tlist | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
+                                <li role="presentation" ng-repeat="transcript in geneData.Transcript | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
                                 ng-click="tab.setTab(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.plen > 0">{{transcript.plen % 100000}} aa</span></a></li>
                             </ul>
                             

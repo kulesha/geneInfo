@@ -1,6 +1,12 @@
 var geneFields = ['id', 'start', 'end', 'strand', 'description', 'display_name', 'seq_region_name'];
 var exonStart = '<div class="exon">';
 var exonEnd = '</div>';
+var foundStart = '<span class="tag">';
+var foundEnd = '</span>';
+
+String.prototype.getDNAPos = function(pos) {
+    return this.split(/[A-Z]/, pos).join('X').length;                      
+}
 
 String.prototype.regexIndexOf = function(regex, startpos) {
     var indexOf = this.substring(startpos || 0).search(regex);
@@ -126,6 +132,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
     $scope.clearAllMarkup = function() {
         $scope.resetSequence();
+        $scope.currentAA = [];
     };
     
     $scope.resetSequence = function() {
@@ -139,6 +146,29 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 var s = sequence.match(re);
                 $scope.geneData.segments = s;
             }
+        }
+    };
+    
+    $scope.resetFound = function() {
+        self.foundSeq = '';
+        if ($scope.currentTag > -1) {
+            var tmp = $scope.geneData.segments[$scope.currentTag];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneData.segments[$scope.currentTag] = tmp;
+            $scope.currentTag  = -1;
+        }
+        
+        if ($scope.currentAA.length) {
+            $scope.currentAA.map(function(item) {
+                var tmp = $scope.geneData.segments[item];
+                tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+                $scope.geneData.segments[item] = tmp;
+            });
+
+            var tmp = $scope.geneData.psegments[$scope.currentAA[1]];
+            tmp = tmp.replace(/\<span class=\"tag\">(.)<\/span>/mg, "$1");
+            $scope.geneData.psegments[$scope.currentAA[1]] = tmp;
+            $scope.currentAA = [];
         }
     };
                                       
@@ -164,6 +194,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
             }
         }
         $scope.geneData = {};
+        $scope.currentAA = [];
     };
 
     this.getFontWidth = function() {
@@ -228,31 +259,27 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     // function that will be called on form submit
     this.findGene = function() {
         self.reset();
+
         $scope.loading = true;
         
+        var gene = $scope.formInfo.gene.toUpperCase();
+        
+        $scope.message = "Looking for " + gene;
+        
+        self.recordVisit($scope.formInfo.source+'/gene/'+gene);
+    
+        // first we look for the gene
+        var url = $scope.formInfo.restServer + '/lookup/symbol/'+self.species+'/' + gene + '?content-type=application/json;expand=1';
         
         $scope.geneInfo = {};
         
-        var gene = $scope.formInfo.gene.toUpperCase();
-        $scope.message = "Looking for " + gene;
-
-        self.recordVisit($scope.formInfo.source+'/gene/'+gene);
-    
-        
-        $scope.formInfo.coding = false;
-        $scope.clearTags();
-        
-        // first we look for the gene
-        var url = $scope.formInfo.restServer + '/lookup/symbol/'+self.species+'/' + gene
-                + '?content-type=application/json;expand=1';
-            
         $http.get(url).success(function(data){
             // hooray - we have found the gene
             geneFields.map(function(item) {
                 $scope.geneData[item] = data[item];
             });
             
-            $scope.geneData.tlist = data.Transcript.map(function(t) {
+            $scope.geneData.Transcript = data.Transcript.map(function(t) {
                 var tn = {id: t.id, plen:0 };
                 if (t.Translation) {
                     tn.plen = t.Translation.length;
@@ -266,25 +293,9 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
                 });
                 return tn;
             });
-            if (0) {
-            
-            $scope.geneData.tlist = [];
-            
-            for (var i in data.Transcript) {
-                var t = data.Transcript[i];
-                var to = {id: t.id, plen: 0};
-                if (t.Translation) {
-                    to.plen = t.Translation.length;
-                    if (t.is_canonical === "1") { // longest coding sequence is 80K
-                        to.plen += 100000;
-                    }
-                }
-                $scope.geneData.tlist.push(to);
-            }
-            }
+
             $scope.geneInfo = data;
-            
-            $scope.geneInfo.url = $scope.formInfo.eServer + '/'+self.species+'/Gene/Summary?g=' + data.id;
+
             $scope.loading = true;
             
             // now let's get the sequence
@@ -332,8 +343,103 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         return 1;
     };
           
+    $scope.getCurrentTranscript = function(tab) {
+        var t;
+        for(var i in $scope.geneData.Transcript) {
+            if ($scope.geneData.Transcript[i].id === tab.currentTab) {
+                t = $scope.geneData.Transcript[i];
+            }
+        }
+        return t;
+    };
+    
+    this.getExonNumber = function(gene, t, pos) {
+        if (gene.strand === -1) {
+            var aStart = gene.end - pos;
+            var i = 0;
+            var exons = t.Exon;
+            for (var j in exons) {
+                if (t.Exon[j].end >= aStart) {
+                    i++;
+                }
+            }
+        } else {
+            var aStart = pos + gene.start;
+            var i = 0;
+            var exons = t.Exon;
+            for (var j in exons) {
+                if (t.Exon[j].start <= aStart) {
+                    i++;
+                }
+            }
+        }            
+        return { bp : aStart, exon : i};
+    };
                                       
+    this.findAA = function(tab) {
+        $scope.resetFound();
+        
+        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));        
+        if (! ipos) { // this will be set only if validation passes in html
+            return;
+        }
+        
+        var t = $scope.getCurrentTranscript(tab);        
+        
+        if (t && t.pid) {
 
+            var peptide = $scope.geneData.psegments.join('');
+            // first find the letter            
+            var aaPos = peptide.getDNAPos(ipos);
+            // then find the preceeding - and then following - ( as the AA can be split between exons )            
+            var leftPos = peptide.split(/\-/, ipos*2-1).join('X').length;          
+            var rightPos = peptide.split(/\-/, ipos*2).join('X').length;          
+            var gpos = [leftPos, aaPos, rightPos];
+
+            // now mark the AA - only the letter
+            var w = $scope.formInfo.width;            
+            var sbin = Math.floor(aaPos / w);
+            var spos = aaPos % w;
+            
+            var binseq = $scope.geneData.psegments[sbin];
+            
+            var str = binseq.substr(0, spos) + foundStart + binseq.substr(spos, 1) + foundEnd + binseq.substr(spos+1);
+            $scope.geneData.psegments[sbin] = str;
+            $location.hash('a_'+sbin);            
+            
+            var foundExtra = '';
+            var bpPos = self.getExonNumber($scope.geneData, t, leftPos);
+
+            foundExtra = '<div style="margin:0">at ' + bpPos.bp + " bp</div>";
+            if (rightPos - leftPos == 2) {
+                foundExtra = foundExtra + 'in exon ' + bpPos.exon;
+            } else { // split between exons
+                foundExtra = foundExtra + 'in exons ' + (bpPos.exon + 1) + ' and ' + (i+1);
+            }
+            
+            // now markup the aa in the genomic sequence
+            var coding = $scope.formInfo.coding;        
+            // could just use dna and gpos ? instead of cdna . 
+            var sequence = coding ? $scope.geneData.cdna : $scope.geneData.dna;
+            
+            var aaDNA = sequence.substr(gpos[0], 1) + sequence.substr(gpos[1], 1) + sequence.substr(gpos[2], 1); 
+            self.foundSeq = "Found aa: " + binseq.substr(spos, 1) + " = " + aaDNA + foundExtra; 
+            $anchorScroll();            
+            
+            for(var i in gpos) {
+                var sbin = Math.floor(gpos[i] / w);
+                var spos = gpos[i] % w;
+                $scope.currentAA.push(sbin);                
+                var binseq = $scope.geneData.segments[sbin];
+                var pos = binseq.getDNAPos(spos+1);
+                var str = binseq.substr(0, pos) + foundStart + binseq.substr(pos, 1) + foundEnd + binseq.substr(pos+1);
+                $scope.geneData.segments[sbin] = str;                        
+            }            
+        }        
+    };
+
+                                      
+                                      
         
                                       
     // the rest api call will fill this object
@@ -403,7 +509,7 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
     
                                       
     this.findBP = function(tab) {
-        $scope.clearTags();
+        $scope.resetFound();
         var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
         
         if (! ipos) { // this will be set only if validation passes in html
@@ -413,161 +519,33 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         var w = $scope.formInfo.width;
         
         var coding = $scope.formInfo.coding;
-        var tmp = $scope.geneInfo.sequence.seq;
-        
-        if (coding) {
-            var t;
-            for(var i in $scope.geneInfo.Transcript) {
-                if ($scope.geneInfo.Transcript[i].id === tab.currentTab) {
-                    t = $scope.geneInfo.Transcript[i];
-                }
-            }
-            tmp = t.cdna;
-        }
-        
-        if (ipos > tmp.length) {
-                ctrl.foundSeq = 'Length is only ' + tmp.length + ' bp';
-                return;
+        var sequence = coding ? $scope.geneData.cdna : $scope.geneData.dna;
+              
+        if (ipos > sequence.length) {
+            self.foundSeq = 'Length is only ' + sequence.length + ' bp';
+            return;
         }
             
-        var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;
-        var pos = ppos; //($scope.geneInfo.strand > 0) ? ipos - $scope.geneInfo.start : $scope.geneInfo.end - ipos;
+        var pos = sequence.getDNAPos(ipos); 
         
-        var sbin = Math.floor(pos / w);
-        var spos = pos % w;
+        var sbin = Math.floor(pos / w); // bin number
+        var spos = pos % w; // position within bin
         
-        var tagStart = '<span class="tag">';
-        var tagEnd = '</span>';
-        var tmp2 = coding ? $scope.geneInfo.csegments[sbin] : $scope.geneInfo.segments[sbin];
-        var ppos2 = tmp2.split(/[A-Z]/, spos+1).join('X').length;
-        var str = tmp2.substr(0, ppos2) + tagStart + tmp2.substr(ppos2, 1) + tagEnd + tmp2.substr(ppos2+1);
-        ctrl.foundSeq = "Found bp: " + tmp2.substr(ppos2, 1);
+        var binseq = $scope.geneData.segments[sbin];
         
-        if (coding) {
-            $scope.geneInfo.csegments[sbin] = str;        
-            $scope.currentcTag = sbin;
-            $location.hash('b_'+sbin);
-        } else {
-            $scope.geneInfo.segments[sbin] = str;        
-            $scope.currentTag = sbin;
-            $location.hash('a_'+sbin);
-        }
+        var binpos = binseq.getDNAPos(spos +1);
+        var bp = binseq.substr(binpos, 1);
+        var str = binseq.substr(0, binpos) + foundStart + bp  + foundEnd + binseq.substr(binpos+1);
+        self.foundSeq = "Found bp: " + bp;
+        
+        $scope.geneData.segments[sbin] = str;        
+        $scope.currentTag = sbin;
+        
+        $location.hash('a_'+sbin);
         $anchorScroll();
     };
     
                                       
-    this.findAA = function(tab) {
-        $scope.clearTags();
-        
-        var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));
-        
-        if (! ipos) { // this will be set only if validation passes in html
-            return;
-        }
-
-        
-        var t;
-        for(var i in $scope.geneInfo.Transcript) {
-            if ($scope.geneInfo.Transcript[i].id === tab.currentTab) {
-                t = $scope.geneInfo.Transcript[i];
-            }
-        }
-            
-        if (t && t.Translation) {
-            var coding = $scope.formInfo.coding;
-     
-            var tmp = coding ? t.pseq : t.ppseq;
-//            console.log(t);
-            if (ipos > t.Translation.length) {
-                ctrl.foundSeq = 'Length is only ' + t.Translation.length + ' aa';
-                return;
-            }
-            
-            var w = $scope.formInfo.width;
-            // first find the letter
-            var ppos = tmp.split(/[A-Z]/, ipos).join('X').length;          
-            // then find the preceeding - and then following - ( as the AA can be split between exons )
-            var pposA = tmp.split(/\-/, ipos*2-1).join('X').length;          
-            var pposB = tmp.split(/\-/, ipos*2).join('X').length;          
-            var gpos = [pposA, ppos, pposB];
-
-//            console.log(gpos);
-            var sbin = Math.floor(ppos / w);
-            var spos = ppos % w;
-            var tagStart = '<span class="tag">';
-            var tagEnd = '</span>';
-    
-            var tmp2 = coding ? $scope.geneInfo.pcsegments[sbin] : $scope.geneInfo.psegments[sbin];
-            var str = tmp2.substr(0, spos) + tagStart + tmp2.substr(spos, 1) + tagEnd + tmp2.substr(spos+1);
-
-            var foundExtra = '';
-            
-            if (coding) {
-                $scope.geneInfo.pcsegments[sbin] = str;
-                $scope.currentpcTag = sbin;        
-                $location.hash('b_'+sbin);
-            } else {
-                $scope.geneInfo.psegments[sbin] = str;
-                $scope.currentpTag = sbin;   
-                $location.hash('a_'+sbin);            
-                if ($scope.geneInfo.strand === -1) {
-                    var aStart = $scope.geneInfo.end - pposA;
-                    var i = 0;
-                    var exons = t.Exon;
-                    for (var j in exons) {
-                        if (t.Exon[j].end >= aStart) {
-                            i++;
-                        }
-                    }
-                } else {
-                    var aStart = pposA + $scope.geneInfo.start;
-                    var i = 0;
-                    var exons = t.Exon;
-                    for (var j in exons) {
-                        if (t.Exon[j].start <= aStart) {
-                            i++;
-                        }
-                    }
-                }
-                
-                foundExtra = '<div style="margin:0">at ' + aStart + " bp</div>";
-                if (pposB - pposA == 2) {
-                    foundExtra = foundExtra + 'in exon ' + i;
-                } else {
-                    foundExtra = foundExtra + 'in exons ' + i + ' and ' + (i+1);
-                }
-            
-            }
-            $anchorScroll();            
-            
-            var tmp3 = coding ? t.cdna : $scope.geneInfo.sequence.seq;
-            var str3 = tmp3.substr(gpos[0], 1) + tmp3.substr(gpos[1], 1) + tmp3.substr(gpos[2], 1);
-            
-            var resStr = "Found aa: " + tmp2.substr(spos, 1) + " = " + str3 + foundExtra; 
-                
-            
-            ctrl.foundSeq = resStr;
-            // now let's find the exon number
-            
-            for(var i in gpos) {
-                var sbin = Math.floor(gpos[i] / w);
-                var spos = gpos[i] % w;
-        
-                var tmp2 = coding ? $scope.geneInfo.csegments[sbin] : $scope.geneInfo.segments[sbin];
-                var ppos2 = tmp2.split(/[A-Z]/, spos+1).join('X').length;
-                var str = tmp2.substr(0, ppos2) + tagStart + tmp2.substr(ppos2, 1) + tagEnd + tmp2.substr(ppos2+1);
-    
-                if (coding) {
-                    $scope.geneInfo.csegments[sbin] = str;        
-                    $scope.currentcTag = sbin;
-                } else {
-                    $scope.geneInfo.segments[sbin] = str;        
-                    $scope.currentTag = sbin;
-                }
-            }
-            
-        }        
-    };
             
     this.clearMarkup = function() {
         var coding = $scope.formInfo.coding;
@@ -938,7 +916,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         }
         var s = 0;
         var e = -1;
-        console.log("SEGMENTS : " + segments.length);
+        //console.log("SEGMENTS : " + segments.length);
         var exons = t.Exon;
         
         for(var i in exons) {
@@ -1018,6 +996,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                     var re = new RegExp(restr,'g');
         
                     var ps = pseq.match(re);
+                    $scope.geneData.peptide = pseq;
                     $scope.geneData.psegments = ps;
                     $scope.geneData.isegments = [];
                     
@@ -1039,10 +1018,14 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     };
 
     this.getCDNA = function(t) {
-        var url = $scope.formInfo.restServer + '/sequence/id/'+t.id+'?content-type=application/json;type=cds';
+        // get CDNA and mask UTRs ( they will be in lower case )
+        //var url = $scope.formInfo.restServer + '/sequence/id/'+t.id+'?content-type=application/json;type=cdna;mask_feature=1';
+        // or just get CDS
+        var url = $scope.formInfo.restServer + '/sequence/id/'+t.id+'?content-type=application/json;type=cds;mask_feature=1';
         
         $http.get(url).success(function(data){
-            $scope.geneData.cdna = data.seq;
+            $scope.geneData.cds = data.seq;
+            //$scope.geneData.cdna = data.seq;
         });
     };
                                        
@@ -1051,13 +1034,9 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
             this.currentTag = transcriptId;
             $scope.clearAllMarkup();
         }
-        var t;            
-        for(var i in $scope.geneData.tlist) {
-            if ($scope.geneData.tlist[i].id === this.currentTab) {
-                t = $scope.geneData.tlist[i];
-            }
-        }
-    
+        
+        var t = $scope.getCurrentTranscript(self);
+        
         if (t.pid) {
             self.getCDNA(t);
         }
