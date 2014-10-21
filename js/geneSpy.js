@@ -117,7 +117,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     $scope.formInfo = {
         //gene: 'HIST1H4F', 
         //gene: 'BRCA2',
-        gene: 'TP53',
+        gene: '',
         width: 100, 
         coding: false, 
         restServer: 'http://rest.ensembl.org',
