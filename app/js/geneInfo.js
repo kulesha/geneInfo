@@ -96,7 +96,7 @@ function elementCurrentStyle(element, styleName){
 
 
 // Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
-var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filter('baseCount', function() {    
+var myApp = angular.module('geneSpyApp', ['ngSanitize', 'ui.bootstrap']) .filter('baseCount', function() {    
         return function(input) { 
             if (input) {
                 return input.split(re).length -1;                
@@ -106,7 +106,7 @@ var myApp = angular.module('geneInfoApp', ['ngSanitize', 'ui.bootstrap']) .filte
     });
     
 // main controller - it accepts the input gene name and fetches the gene info
-myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', '$window', 
+myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchorScroll', '$window', 
                                   function ($scope, $http, $sce, $location, $anchorScroll, $window) {
 
     var self = this;
@@ -207,6 +207,9 @@ myApp.controller('geneInfoCtrl', ['$scope', '$http', '$sce','$location', '$ancho
         }
         $scope.geneData = {};
         $scope.currentAA = [];
+        
+        $scope.formInfo.coding = false;
+        self.foundSeq = '';
     };
 
     this.getFontWidth = function() {
@@ -792,7 +795,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                             c = c + m;
                         }
                     }                   
-                    console.log("DATA Z1:" + sizeof($scope.geneData));
+//                    console.log("DATA Z1:" + sizeof($scope.geneData));
                 });                    
             });                                            
     };
@@ -823,7 +826,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         if (t.pid) {
             $scope.markupTranslation(t);
         }
-        console.log("DATA Z0:" + sizeof($scope.geneData));
+//        console.log("DATA Z0:" + sizeof($scope.geneData));
     };
                                        
    
@@ -833,7 +836,6 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                                            
     this.hasTranslation = function() {
         var t = $scope.getCurrentTranscript(self);            
-        
         if (t && t.pid) {
             return true;
         }
