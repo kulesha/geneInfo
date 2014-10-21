@@ -11,7 +11,7 @@
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" type="text/css" href="css/geneInfo.css?v=0.6">
+    <link rel="stylesheet" type="text/css" href="css/geneInfo.css?v=0.7">
 
     <!-- added to enable sticky goto box -->
     <script src="js/sizeof.js"></script>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="modal-body" ng-switch on="items[0]">
                     <p ng-switch-when="Contact">All enquiries please contact ek@ebi.ac.uk</p>
-                    <p ng-switch-when="About">geneSpy, version 0.6<br/><br/>
+                    <p ng-switch-when="About">geneSpy, version 0.7<br/><br/>
                     Created by <a href="https://www.linkedin.com/in/kulesha">Eugene Kulesha</a> and <a href="https://www.linkedin.com/in/veragrinkevich">Vera Grinkevich</a> <br/><br/>
                     Thanks to Magali Ruffier for updates to e! REST API<br><br/>
                     <i>All enquires please contact ek@ebi.ac.uk</i></p>                    
@@ -160,50 +160,47 @@
                     
                         <div class="warn" ng-show="gi.foundSeq"><span ng-bind-html="gi.foundSeq"></span></div>
                         
-                        <div ng-show="tab.hasCoding()">
-                            <em>Coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.setTab()" name="coding"/>
-                        </div>
-                        
+                        <div ng-show="tab.hasTranslation()">
+                            <em>Coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.selectTranscript()" name="coding"/>
+                        </div>                        
                      </form>   
                     </div>
                 </div>
                 
-                <div class="col-xs-8">
-                
-            <table class="table table-condensed table-striped" style="margin-left:15px;margin-right:15px;">
-                <tr>
-                    <th class="col-xs-2">Gene name</th><td><b>{{geneData.display_name}}</b> <em>(Ensembl ID: {{geneData.id}} ) </em><a href="{{geneData.url}}" target="_blank"><img src="i/e-quest.gif" title="View in Ensembl" /></a></td>
-                </tr>
-                <tr>
-                    <th>Description</th><td>{{geneData.description}}</td>
-                </tr>
-                <tr>
-                    <th>Location</th><td>{{geneData.seq_region_name}} : {{geneData.start | number}} - {{geneData.end | number}} <em>{{geneData.strand > 0 ? 'forward' : 'reverse'}} strand</em></td>
-                </tr>
-                <tr>               
-                    <th>Length</th><td> {{geneData.end - geneData.start + 1| number}}bp</td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="dropdown">
-                            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"> 
-                                Choose a transcript
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                                <li role="presentation" ng-repeat="transcript in geneData.Transcript | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
-                                ng-click="tab.setTab(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.plen > 0">{{transcript.plen % 100000}} aa</span></a></li>
-                            </ul>
-                            
-                        </div>                        
-                    </td>
-                    <td style="padding-top:5px">
-                        <span ng-show="tab.hasTranslation()">
-                        Style legend <pre style="display:inline"><span class="exon">A: Exon</span></pre> <pre style="display:inline"><span>A: Intron</span></pre> <pre style="display:inline"><span class="protein">-A-: Protein</span></pre>
-                        </span>
-                    </td>
-                </tr>
-            </table>
+                <div class="col-xs-8">                
+                    <table class="table table-condensed table-striped" style="margin-left:15px;margin-right:15px;">
+                    <tr>
+                        <th class="col-xs-2">Gene name</th><td><b>{{geneData.display_name}}</b> <em>(Ensembl ID: {{geneData.id}} ) </em><a href="{{geneData.url}}" target="_blank"><img src="i/e-quest.gif" title="View in Ensembl" /></a></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th><td>{{geneData.description}}</td>
+                    </tr>
+                    <tr>
+                        <th>Location</th><td>{{geneData.seq_region_name}} : {{geneData.start | number}} - {{geneData.end | number}} <em>{{geneData.strand > 0 ? 'forward' : 'reverse'}} strand</em></td>
+                    </tr>
+                    <tr>               
+                        <th>Length</th><td> {{geneData.end - geneData.start + 1| number}}bp</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"> 
+                                    Choose a transcript
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                                    <li role="presentation" ng-repeat="transcript in geneData.Transcript | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
+                                ng-click="tab.selectTranscript(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.plen > 0">{{transcript.plen % 100000}} aa</span></a></li>
+                                </ul>
+                            </div>                        
+                        </td>
+                        <td style="padding-top:5px">
+                            <span ng-show="tab.hasTranslation()">
+                            Style legend <pre style="display:inline"><span class="exon">A: Exon</span></pre> <pre style="display:inline"><span>A: Intron</span></pre> <pre style="display:inline"><span class="protein">-A-: Protein</span></pre>
+                            </span>
+                        </td>
+                    </tr>
+                    </table>
             
                 
                     <div ng-show="loading" style="text-align:center">
@@ -223,7 +220,7 @@
                                             <td class="num">:{{ geneData.isegments[$index] + baseCount(geneData.psegments[$index]) -1 }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="num">{{ ($index * formInfo.width) + 1 | number }}</td>
+                                            <td class="num">{{ ($index * formInfo.width) + 1 | number }}&nbsp;</td>
                                             <td ng-click="tab.click()" ng-dblclick="tab.click()" ng-mousedown="tab.start_select($event, $index, 'bp')" ng-mouseup="tab.stop_select($event, $index, 'bp')" ng-mouseleave="tab.untrack()" ng-mousemove="tab.track($event, $index, 'bp')"><pre ><span ng-bind-html="geneData.segments[$index]"></span></pre></td>
                                             <td class="num">{{ ($index * formInfo.width) + baseCount(geneData.segments[$index]) | number }}</td>
                                         </tr>
@@ -231,33 +228,7 @@
                                 </td>
                             </tr>
                         </table>
-                    </div>
-
-                    <!--div ng-show="formInfo.coding == true">
-                        <div ng-hide="tab.hasTranslation()" class="warn">This transcript does not code for any proteins.</div>
-                        <table ng-show="tab.hasTranslation()">
-                            <tr class="sequence" ng-repeat="segment in geneInfo.csegments track by $index">
-                                <td>
-                                    <a class="anchor" id="b_{{$index}}"></a>
-                                    <table class="table-condensed">
-                                        <tr ng-show="geneInfo.pcsegments[$index].indexOf('-') > -1">
-                                            <td class="num">{{geneInfo.icsegments[$index]}}:</td>
-                                            <td><pre><span class="protein" ng-bind-html="geneInfo.pcsegments[$index]"></span></pre></td>
-                                            <td class="num">:{{ geneInfo.icsegments[$index] + baseCount(geneInfo.pcsegments[$index]) -1 }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="num">{{ ($index * formInfo.width) + 1 | number }}</td>
-                                            <td ng-click="tab.click()" ng-dblclick="tab.click()" ng-mousedown="tab.start_select($event, $index, 'bp')" ng-mouseup="tab.stop_select($event, $index, 'bp')" ng-mouseleave="tab.untrack()" ng-mousemove="tab.track($event, $index, 'bp')">
-                                                <pre ><span class="exon" ng-bind-html="geneInfo.csegments[$index]"></span></pre></td>
-                                            <td class="num">{{ ($index * formInfo.width) + baseCount(geneInfo.csegments[$index]) | number }}</td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                    </div-->
-
-                
+                    </div>                
             </div>  
         </div>
     </div>
@@ -271,7 +242,7 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
     <script src="http://code.angularjs.org/1.2.20/angular-sanitize.min.js"></script>
  
-    <script type="text/javascript" src="js/geneInfo.js?v=0.6"></script>
+    <script type="text/javascript" src="js/geneInfo.js?v=0.7"></script>
            <!-- for dialog boxes -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"></script>
