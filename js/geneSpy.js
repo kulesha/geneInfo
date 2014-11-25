@@ -278,13 +278,8 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         }
         
     };
-                                          
-    self.getFontWidth();                                                              
-    self.updateServer();                                      
-    self.recordVisit("/");
-                                                                            
-    // function that will be called on form submit
-    this.findGene = function() {
+    
+$scope.findGene = function() {
         self.reset();
 
         $scope.loading = true;
@@ -334,6 +329,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
                 $scope.geneData.segments = s;
                 
                 $scope.loading = false;  
+                $location.path("gene\/"+ gene);
 //                console.log(sizeof($scope.geneData));
             });
             
@@ -346,6 +342,22 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         });
         
     };
+                                          
+    self.getFontWidth();                                                              
+    self.updateServer();                                      
+
+// if thre is gene id in the url then go directly to the gene page                                      
+    var path =  $location.path();       
+    var geneRegex = /^\/gene\/([\d\w]+)/i;
+    var match = geneRegex.exec(path);
+    if (match) {
+        $scope.formInfo.gene = match[1];
+        $scope.findGene();
+    } else {                                          
+        self.recordVisit("/");
+    }
+                                                                            
+    // function that will be called on form submit
                                       
                                       
                                       

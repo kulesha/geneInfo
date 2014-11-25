@@ -69,7 +69,7 @@
                 <div class="input-group">
                     <input type="text" id="geneName" name="geneName" class="form-control" placeholder="Enter gene name" ng-model="formInfo.gene"/>    
                     <span class="input-group-btn">
-                        <button type="submit" class="btn btn-success" ng-click="gi.findGene()">Find</button>
+                        <button type="submit" class="btn btn-success" ng-click="findGene()">Find</button>
                     </span>
                 </div>
             </div>                
@@ -132,12 +132,6 @@
                     <input type="hidden" name="QUERY" value="{{blast_sequence}}" />
                     <input type="hidden" name="userseq" value="{{blast_sequence}}" />
                     <input type="hidden" name="PAGE_TYPE" value="BlastSearch" />
-                    <!--
-                    <button type="submit" class="btn btn-success btn-xs" name="stype" value="eblast" ng-click="tab.set_eblast()">Ensembl BLAST</button>
-                    <button type="submit" class="btn btn-success btn-xs" name="stype" value="nblast" ng-click="tab.set_nblast()">NCBI BLAST</button>
-                    <button type="submit" class="btn btn-success btn-xs" name="stype"  value="crispr" ng-click="tab.set_crispr()">CRISPRdirect</button>
--->
-                    
                 </form>
                   
             </div>
