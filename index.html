@@ -119,16 +119,27 @@
         
             <div id="location" style="position: fixed;display:none;z-index:1000;background-color:#333333;padding:5px;opacity:0.9;color:#ffffff;"> {{ location }} </div>            
             
-            <div id="blast" style="position:fixed;display:none;z-index:1000;padding:5px;opacity:1.0;">
-                
+            <div id="menuSelect">
+                <span class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;" ng-click="tab.menuHide()"></span><h5>Send sequence to</h5>
+                <ul id="selectMenu" class="my-dropdown-menu" role="menu">
+                    <li><a tabindex="-1" ng-click="tab.sendto('crispr')">CRISPRdirect</a></li>
+                    <li><a tabindex="-1" ng-click="tab.sendto('nblast')">BLAST(ncbi)</a></li>
+                    <li><a tabindex="-1" ng-click="tab.sendto('eblast')">BLAST(ensembl)</a></li>
+                </ul>
+  
                 <form role="form" target="gs_blast" id="blast_form" name="blast_form" method="post" ng-submit="tab.goto_blast();" action="#">
                     <input type="hidden" name="query_sequence" value="{{blast_sequence}}" />
                     <input type="hidden" name="QUERY" value="{{blast_sequence}}" />
+                    <input type="hidden" name="userseq" value="{{blast_sequence}}" />
                     <input type="hidden" name="PAGE_TYPE" value="BlastSearch" />
-                    
+                    <!--
                     <button type="submit" class="btn btn-success btn-xs" name="stype" value="eblast" ng-click="tab.set_eblast()">Ensembl BLAST</button>
                     <button type="submit" class="btn btn-success btn-xs" name="stype" value="nblast" ng-click="tab.set_nblast()">NCBI BLAST</button>
+                    <button type="submit" class="btn btn-success btn-xs" name="stype"  value="crispr" ng-click="tab.set_crispr()">CRISPRdirect</button>
+-->
+                    
                 </form>
+                  
             </div>
             
             

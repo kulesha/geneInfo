@@ -609,24 +609,28 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                                        
     this.click = function(e, row, atype) {
         return;
-        $scope.blast_shown = 0;
-        $("#blast").hide();
+        $scope.menu_shown = 0;
+        ctrl.menuHide();
         ctrl.clear_select();
     };
     
     this.dblclick = function(e, row, atype) {
-        $scope.blast_shown = 0;
-        $("#blast").hide();
+        $scope.menu_shown = 0;
+        ctrl.menuHide();
         ctrl.clear_select();
     };
     
     this.start_select = function( e, row, atype ) {
         var x = this.getLinePos(e);
-        $scope.blast_shown = 0;
+        $scope.menu_shown = 0;
         $scope.currentSelect.start = $scope.formInfo.width * row + x;
-        $("#blast").hide();
+        ctrl.menuHide();
     };
     
+    this.menuHide = function() {
+        $("#menuSelect").hide();
+    };
+                                       
     this.stop_select = function( e, row, atype ) {
    
         var x = this.getLinePos(e);
@@ -640,15 +644,15 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
 
         $scope.blast_sequence = getSelectedDNA();
         $("#location").hide();
-        $("#blast").css({top: e.clientY + 10, left: e.clientX + 10}).show();
-        $scope.blast_shown = 1;
+        $("#menuSelect").css({top: e.clientY + 5, left: e.clientX + 5}).show();
+        $scope.menu_shown = 1;
         
     };
     
     this.clear_select = function() {
         $scope.currentSelect.start = -1;
         $scope.currentSelect.end = -1;
-        $scope.blast_shown = 0;
+        $scope.menu_shown = 0;
     };
                                        
     this.untrack = function() {
@@ -656,7 +660,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     };
 
     this.goto_blast = function() {
-        $("#blast").hide();
+        ctrl.menuHide();
         ctrl.clear_select();        
         document.blast_form.action = $scope.formInfo.blast;        
         var path = '/blast/ensembl';
@@ -666,6 +670,11 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
             path = '/blast/ncbi';
         }
         
+        if ($scope.blast_type === 'crispr') {
+            document.blast_form.action = 'http://crispr.dbcls.jp';
+            path = '/blast/crispr';
+        }
+        
         if ($window.ga){
             $window.ga('send', 'pageview', { page: path });
         }
@@ -673,16 +682,15 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         return true;
     };
     
-    this.set_eblast = function() {
-        $scope.blast_type = 'eblast';        
+    this.sendto = function(dest) {
+        $scope.blast_type = dest;        
+        ctrl.goto_blast();
+        document.blast_form.submit();
     };
                                            
-    this.set_nblast = function() {
-        $scope.blast_type = 'nblast';        
-    };
                                        
     this.track = function(e, row, atype) {
-        if ($scope.blast_shown) {
+        if ($scope.menu_shown) {
             return;
         }
         if ($scope.currentSelect.start > 0) {
