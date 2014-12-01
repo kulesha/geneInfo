@@ -117,7 +117,7 @@
         
         <div ng-show="geneData.id" ng-controller="TabController as tab" ng-cloak id="data">
         
-            <div id="location" style="position: fixed;display:none;z-index:1000;background-color:#333333;padding:5px;opacity:0.9;color:#ffffff;"> {{ location }} </div>            
+            <div id="location" style="position: fixed;display:none;z-index:1000;background-color:#333333;padding:5px;opacity:0.9;color:#ffffff;font-size:0.75em"> {{ location }} </div>            
             
             <div id="menuSelect">
                 <span class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;" ng-click="tab.menuHide()"></span><h5>Send sequence to</h5>
@@ -149,10 +149,10 @@
                                 </td-->
 
                                 <td style="width:10px">    
-                                    <button type="submit" class="btn btn-success" ng-click="gi.findBP(tab)">bp</button>
+                                    <button type="submit" class="btn btn-success" ng-click="findBP(tab)">bp</button>
                                 </td>
                                 <td style="width:10px">
-                                    <button ng-show="tab.hasTranslation()" type="submit" class="btn btn-success" ng-click="gi.findAA(tab)">aa</button>
+                                    <button ng-show="tab.hasTranslation()" type="submit" class="btn btn-success" ng-click="findAA(tab)">aa</button>
                                 </td>
                                 <td style="width:90%">&nbsp;</td>
                                 <td style="text-align:right">
@@ -166,8 +166,22 @@
                         <div ng-show="tab.hasTranslation()">
                             <em>Coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.selectTranscript()" name="coding"/>
                         </div>                        
-                     </form>   
+
+                        </form>   
+                        <ul id="pager" ng-show="chunksNum">
+                      Page: <li ng-repeat="n in range(1, chunksNum)"><a href="#" ng-click="setPage(n)">{{n}}</a></li>                      
+                        </ul>
+                        <div ng-show="geneData.end - geneData.start > 149999">
+                        <span style="float:left">Page size:</span>
+
+                        <select id="chunks" ng-model="formInfo.chunkSize" class="form-control"
+ ng-change="findGene()">
+                            <option ng-repeat="item in chunks" ng-selected="{{item.id == formInfo.chunkSize}}" value="{{item.id}}">{{item.name}}</option>
+                        </select>
+
+                        </div>
                     </div>
+                
                 </div>
                 
                 <div class="col-xs-8">                
@@ -193,7 +207,7 @@
                                 </button>
                                 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
                                     <li role="presentation" ng-repeat="transcript in geneData.Transcript | orderBy:'-plen'" ng-class="{active:tab.isSet(transcript.id)}"
-                                ng-click="tab.selectTranscript(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.plen > 0">{{transcript.plen % 100000}} aa</span></a></li>
+                                ng-click="selectTranscript(transcript.id)"><a role="menuitem" tabindex="-1" href="#">{{transcript.id}} <span class="badge" ng-show="transcript.plen > 0">{{transcript.plen % 100000}} aa</span></a></li>
                                 </ul>
                             </div>                        
                         </td>
@@ -223,9 +237,9 @@
                                             <td class="num">:{{ geneData.isegments[$index] + baseCount(geneData.psegments[$index]) -1 }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="num">{{ ($index * formInfo.width) + 1 | number }}&nbsp;</td>
+                                            <td class="num">{{ ($index * formInfo.width + (geneData.currentPage - 1) * formInfo.chunkSize) + 1 | number }}&nbsp;</td>
                                             <td ng-click="tab.click()" ng-dblclick="tab.click()" ng-mousedown="tab.start_select($event, $index, 'bp')" ng-mouseup="tab.stop_select($event, $index, 'bp')" ng-mouseleave="tab.untrack()" ng-mousemove="tab.track($event, $index, 'bp')"><pre ><span ng-bind-html="geneData.segments[$index]"></span></pre></td>
-                                            <td class="num">{{ ($index * formInfo.width) + baseCount(geneData.segments[$index]) | number }}</td>
+                                            <td class="num">{{ ($index * formInfo.width) + (geneData.currentPage - 1) * formInfo.chunkSize + baseCount(geneData.segments[$index]) | number }}</td>
                                         </tr>
                                     </table>
                                 </td>
@@ -249,8 +263,8 @@
 
         
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
-    <script src="http://code.angularjs.org/1.2.20/angular-sanitize.min.js"></script>
- 
+    <!--script src="http://code.angularjs.org/1.2.20/angular-sanitize.min.js"></script-->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.3/angular-sanitize.min.js"></script>
     <script type="text/javascript" src="js/geneSpy.js"></script>
            <!-- for dialog boxes -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap.min.js"></script>
