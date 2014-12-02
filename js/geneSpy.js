@@ -141,11 +141,11 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     self.trustedHtml = $sce.trustAsHtml(this.textContent);                                    
                                       
     $scope.chunks = [
-        { id: 150000, name: '150K'},
-        { id: 300000, name: '300K'},
-        { id: 500000, name: '500K'}
+        { id: 120000, name: '120K'},
+        { id: 250000, name: '250K'},
+        { id: 400000, name: '400K'}
     ];
-        
+                                      
     // by default we'll look for BRCA2, TRDD1 - smallest
     $scope.formInfo = {
         //gene: 'HIST1H4F', 
@@ -155,20 +155,15 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         coding: false, 
         restServer: 'http://rest.ensembl.org',
         eServer: 'http://www.ensembl.org/',
-        source: 'elatest',
+        source: 'egrch37',
         division: 'ensembl',
-        chunkSize : 300000        
+        chunkSize : 250000        
     };
-
-    $scope.chunkSize = 300000;                                      
-    $scope.formInfo.currentSelectedChunk = { id :300000 };
-                                      
-    //$scope.formInfo.currentChunk = $scope.chunks[1];
                                       
     $scope.serverList = [
         { name: 'elatest', division: 'ensembl', label: 'Ensembl ( GRCh38 )' , url: 'http://rest.ensembl.org', eurl: 'http://www.ensembl.org'},
         { name: 'egrch37', division: 'ensembl', label: 'Ensembl ( GRCh37 )' , url: 'http://grch37.rest.ensembl.org', eurl: 'http://grch37.ensembl.org'}
-// eg reset is too slow        { name: 'eplants', division: 'plants', label: 'Plants' , url: 'http://rest.ensemblgenomes.org', eurl: 'http://plants.ensembl.org'}
+// eg rest is too slow        { name: 'eplants', division: 'plants', label: 'Plants' , url: 'http://rest.ensemblgenomes.org', eurl: 'http://plants.ensembl.org'}
     ];
 
     $scope.range = function(min, max, step){
@@ -288,7 +283,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $http.get(surl).success(function(sdata ){
             self.speciesList = sdata.species;
         });
-        $scope.formInfo.blast = $scope.formInfo.eServer + self.species + '/Tools/Blast';    
+        $scope.formInfo.blast = $scope.formInfo.eServer + '/' +self.species + '/Tools/Blast';    
         self.reset();
     }
                                       
@@ -304,11 +299,65 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         
     };
     
-    $scope.currentChunkSize = function() {
-        return $scope.formInfo.chunkSize.id;
+    $scope.extlinks = [
+        { id : 'crispr', name: 'CRISPRdirect', url : 'http://crispr.dbcls.jp', stat : '/tool/crispr',
+            on : {
+                'homo_sapiens' : 'GRCh37',
+                'mus_musculus' : 'GRCm38',
+                'rattus_norvegicus' : 'Rnor_5.0',
+                'sus_scrofa' : 'Sscrofa10.2',
+                'callithrix_jacchus': 'C_jacchus3.2.1',
+                'gallus_gallus': 'Galgal4',
+                'xenopus_tropicalis': 'JGI_4.2',
+                'xenopus_laevis': 'JGI_7.1', // not in e!
+                'danio_rerio': 'Zv9',
+                'ciona_intestinalis':  'JGI_2.1', // in e! it is KH
+                'drosophila_melanogaster': 'BDGP R5',
+                'caenorhabditis_elegans': 'WS220',
+                'arabidopsis_thaliana': 'TAIR10',
+                'oryza_sativa': 'Os-Nipponbare-Reference-IRGSP-1.0',
+                'sorghum_bicolor': 'Sorghum bicolor v2.1',            
+                'bombyx_mori': 'Bmor1',
+                'saccharomyces_cerevisiae': 'sacCer3',
+                'schizosaccharomyces_pombe': 'ASM294v2'
+            }
+        },
+        { id : 'nblast', name: 'BLAST(ncbi)', url : 'http://www.ncbi.nlm.nih.gov/blast/Blast.cgi', stat : '/tool/nblast', 'all' : 1 },
+        { id : 'eblast', name: 'BLAST(ensembl)', url : $scope.formInfo.blast, stat : '/tool/eblast', 'all' : 1 }
+    ];
+
+/* some tools don;t work for all available species : this function checks if the tool is available for the current species/assembly */                                      
+    $scope.valid_link = function(link_id) {        
+        var tool;
+        for (var i in $scope.extlinks) {
+            if ($scope.extlinks[i].id == link_id) {
+                tool = $scope.extlinks[i];
+                break;
+            }
+        }
+        if ( tool ) {
+            if (tool.all) {
+                return true;
+            }
+            
+            if (tool.on) {
+                var tool_assembly = tool.on[self.species];
+                var sobj;
+                for (var i in self.speciesList) {
+                    if (self.speciesList[i].name == self.species) {
+                        sobj = self.speciesList[i];
+                        break;
+                    }
+                }
+                
+                if (sobj && sobj.assembly == tool_assembly) {                
+                    return true;
+                }
+            }
+        }        
+        return false;
     };
-    
-    
+                                      
     $scope.findGene = function() {
         self.reset();
 
@@ -333,8 +382,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
             
             var seqlen =  data.end - data.start+ 1;
             $scope.geneData.seqlen = seqlen;
-            var chunkSize = $scope.formInfo.chunkSize;
-            console.log(chunkSize);
+            var chunkSize = $scope.formInfo.chunkSize;           
             
             if (seqlen > chunkSize) {
                 $scope.chunksNum = Math.floor(seqlen / chunkSize) + 1;
@@ -589,7 +637,6 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         var data = $scope.geneData;
         var chunkSize = $scope.formInfo.chunkSize;
                 
-        console.log("SP : " + page);
         $scope.loading = true;
             
             // now let's get the sequence
@@ -613,7 +660,6 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $scope.geneData.seqStart = seqStart;
         $scope.geneData.seqEnd = seqEnd;
      
-            console.log("1");
         var surl = $scope.formInfo.restServer + '/sequence/region/'+self.species+'/' + data.seq_region_name + ':' + seqStart + '..' + seqEnd + ':'+data.strand+'?content-type=application/json';
         $http.get(surl).success(function(seq){                                
             var w = $scope.formInfo.width;
@@ -626,7 +672,6 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
             $scope.geneData.segments = s;
                 
             $scope.loading = false;  
-            console.log("2");
             var gene = $scope.formInfo.gene.toUpperCase();
             $location.path("gene\/"+ gene);
             if ($scope.geneData.currentTranscript) {
@@ -765,7 +810,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     
     // when changing species - change the url of the blast tool                                  
     this.update_blast = function() {
-        $scope.formInfo.blast = $scope.formInfo.restServer + self.species + '/Tools/Blast';    
+        $scope.formInfo.blast = $scope.formInfo.restServer + '/' + self.species + '/Tools/Blast';    
         $("#blast_form").action = $scope.formInfo.blast;
     };
                                        

@@ -121,10 +121,11 @@
             
             <div id="menuSelect">
                 <span class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;" ng-click="tab.menuHide()"></span><h5>Send sequence to</h5>
+                
                 <ul id="selectMenu" class="my-dropdown-menu" role="menu">
-                    <li><a tabindex="-1" ng-click="tab.sendto('crispr')">CRISPRdirect</a></li>
-                    <li><a tabindex="-1" ng-click="tab.sendto('nblast')">BLAST(ncbi)</a></li>
-                    <li><a tabindex="-1" ng-click="tab.sendto('eblast')">BLAST(ensembl)</a></li>
+                    <li ng-repeat="link in extlinks" ng-show="valid_link(link.id)">
+                        <a tabindex="-1" ng-click="tab.sendto(link.id)">{{link.name}}</a>
+                    </li>
                 </ul>
   
                 <form role="form" target="gs_blast" id="blast_form" name="blast_form" method="post" ng-submit="tab.goto_blast();" action="#">
