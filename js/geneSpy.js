@@ -279,11 +279,13 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
                                           
     this.updateSpecies = function() {                                  
         var surl = $scope.formInfo.restServer + '/info/species?content-type=application/json;division='+$scope.formInfo.division;                                   
-        self.species = 'homo_sapiens';   
+        $scope.species = 'homo_sapiens';   
+        $scope.crispr_db = 'hg19';
+        
         $http.get(surl).success(function(sdata ){
             self.speciesList = sdata.species;
         });
-        $scope.formInfo.blast = $scope.formInfo.eServer + '/' +self.species + '/Tools/Blast';    
+        $scope.formInfo.blast = $scope.formInfo.eServer + '/' +$scope.species + '/Tools/Blast';    
         self.reset();
     }
                                       
@@ -302,25 +304,46 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     $scope.extlinks = [
         { id : 'crispr', name: 'CRISPRdirect', url : 'http://crispr.dbcls.jp', stat : '/tool/crispr',
             on : {
-                'homo_sapiens' : 'GRCh37',
-                'mus_musculus' : 'GRCm38',
-                'rattus_norvegicus' : 'Rnor_5.0',
-                'sus_scrofa' : 'Sscrofa10.2',
-                'callithrix_jacchus': 'C_jacchus3.2.1',
-                'gallus_gallus': 'Galgal4',
-                'xenopus_tropicalis': 'JGI_4.2',
-                'xenopus_laevis': 'JGI_7.1', // not in e!
-                'danio_rerio': 'Zv9',
-                'ciona_intestinalis':  'JGI_2.1', // in e! it is KH
-                'drosophila_melanogaster': 'BDGP R5',
-                'caenorhabditis_elegans': 'WS220',
-                'arabidopsis_thaliana': 'TAIR10',
-                'oryza_sativa': 'Os-Nipponbare-Reference-IRGSP-1.0',
-                'sorghum_bicolor': 'Sorghum bicolor v2.1',            
-                'bombyx_mori': 'Bmor1',
-                'saccharomyces_cerevisiae': 'sacCer3',
-                'schizosaccharomyces_pombe': 'ASM294v2'
-            }
+                'homo_sapiens' : { 'assembly' : 'GRCh37', 'db' : 'hg19' },
+                'mus_musculus' : { 'assembly' : 'GRCm38', 'db' : 'mm10' },
+                'rattus_norvegicus' : { 'assembly' : 'Rnor_5.0', 'db' : 'rn5' },
+                'sus_scrofa' : { 'assembly' : 'Sscrofa10.2', 'db' : 'calJac3' },
+                'callithrix_jacchus': { 'assembly' : 'C_jacchus3.2.1', 'db' : 'susScr3' },
+                'gallus_gallus': { 'assembly' : 'Galgal4', 'db' : 'galGal4' },
+                'xenopus_tropicalis': { 'assembly' : 'JGI_4.2', 'db' : 'xenTro3' },
+                'xenopus_laevis': { 'assembly' : 'JGI_7.1', 'db' : 'Xenla7' }, // not in e!
+                'danio_rerio': { 'assembly' : 'Zv9', 'db' : 'danRer7' },
+                'ciona_intestinalis':  { 'assembly' : 'JGI_2.1', 'db' : 'ci2' }, // in e! it is KH
+                'drosophila_melanogaster': { 'assembly' : 'BDGP R5', 'db' : 'dm3' },
+                'caenorhabditis_elegans': { 'assembly' : 'WS220', 'db' : 'ce10' },
+                'arabidopsis_thaliana': { 'assembly' : 'TAIR10', 'db' : 'TAIR10' },
+                'oryza_sativa': { 'assembly' : 'Os-Nipponbare-Reference-IRGSP-1.0', 'db' : 'rice' },
+                'sorghum_bicolor': { 'assembly' : 'Sorghum bicolor v2.1', 'db' : 'sorBic' },            
+                'bombyx_mori': { 'assembly' : 'Bmor1', 'db' : 'bmor1' },
+                'saccharomyces_cerevisiae': { 'assembly' : 'sacCer3', 'db' : 'sacCer3' },
+                'schizosaccharomyces_pombe': { 'assembly' : 'ASM294v2', 'db' : 'pombe' }
+            },
+            params : {
+                'homo_sapiens' : { 'assembly' : 'GRCh37', 'db' : 'hg19' },
+                'mus_musculus' : { 'assembly' : 'GRCm38', 'db' : 'mm10' },
+                'rattus_norvegicus' : { 'assembly' : 'Rnor_5.0', 'db' : 'rn5' },
+                'sus_scrofa' : { 'assembly' : 'Sscrofa10.2', 'db' : 'calJac3' },
+                'callithrix_jacchus': { 'assembly' : 'C_jacchus3.2.1', 'db' : 'susScr3' },
+                'gallus_gallus': { 'assembly' : 'Galgal4', 'db' : 'galGal4' },
+                'xenopus_tropicalis': { 'assembly' : 'JGI_4.2', 'db' : 'xenTro3' },
+                'xenopus_laevis': { 'assembly' : 'JGI_7.1', 'db' : 'Xenla7' }, // not in e!
+                'danio_rerio': { 'assembly' : 'Zv9', 'db' : 'danRer7' },
+                'ciona_intestinalis':  { 'assembly' : 'JGI_2.1', 'db' : 'ci2' }, // in e! it is KH
+                'drosophila_melanogaster': { 'assembly' : 'BDGP R5', 'db' : 'dm3' },
+                'caenorhabditis_elegans': { 'assembly' : 'WS220', 'db' : 'ce10' },
+                'arabidopsis_thaliana': { 'assembly' : 'TAIR10', 'db' : 'TAIR10' },
+                'oryza_sativa': { 'assembly' : 'Os-Nipponbare-Reference-IRGSP-1.0', 'db' : 'rice' },
+                'sorghum_bicolor': { 'assembly' : 'Sorghum bicolor v2.1', 'db' : 'sorBic' },            
+                'bombyx_mori': { 'assembly' : 'Bmor1', 'db' : 'bmor1' },
+                'saccharomyces_cerevisiae': { 'assembly' : 'sacCer3', 'db' : 'sacCer3' },
+                'schizosaccharomyces_pombe': { 'assembly' : 'ASM294v2', 'db' : 'pombe' }
+            },
+         
         },
         { id : 'nblast', name: 'BLAST(ncbi)', url : 'http://www.ncbi.nlm.nih.gov/blast/Blast.cgi', stat : '/tool/nblast', 'all' : 1 },
         { id : 'eblast', name: 'BLAST(ensembl)', url : $scope.formInfo.blast, stat : '/tool/eblast', 'all' : 1 }
@@ -341,10 +364,10 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
             }
             
             if (tool.on) {
-                var tool_assembly = tool.on[self.species];
+                var tool_assembly = tool.on[$scope.species].assembly;
                 var sobj;
                 for (var i in self.speciesList) {
-                    if (self.speciesList[i].name == self.species) {
+                    if (self.speciesList[i].name == $scope.species) {
                         sobj = self.speciesList[i];
                         break;
                     }
@@ -370,11 +393,11 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         self.recordVisit($scope.formInfo.source+'/gene/'+gene);
     
         // first we look for the gene
-        var url = $scope.formInfo.restServer + '/lookup/symbol/'+self.species+'/' + gene + '?content-type=application/json;expand=1';
+        var url = $scope.formInfo.restServer + '/lookup/symbol/'+$scope.species+'/' + gene + '?content-type=application/json;expand=1';
                 
         $http.get(url).success(function(data){
             // hooray - we have found the gene
-            data.url = $scope.formInfo.eServer + '/' + self.species + '/Gene/Summary?g=' + data.id;
+            data.url = $scope.formInfo.eServer + '/' + $scope.species + '/Gene/Summary?g=' + data.id;
             
             geneFields.map(function(item) {
                 $scope.geneData[item] = data[item];
@@ -660,7 +683,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $scope.geneData.seqStart = seqStart;
         $scope.geneData.seqEnd = seqEnd;
      
-        var surl = $scope.formInfo.restServer + '/sequence/region/'+self.species+'/' + data.seq_region_name + ':' + seqStart + '..' + seqEnd + ':'+data.strand+'?content-type=application/json';
+        var surl = $scope.formInfo.restServer + '/sequence/region/'+$scope.species+'/' + data.seq_region_name + ':' + seqStart + '..' + seqEnd + ':'+data.strand+'?content-type=application/json';
         $http.get(surl).success(function(seq){                                
             var w = $scope.formInfo.width;
             var restr = ".{1,"+w+"}";
@@ -810,7 +833,8 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     
     // when changing species - change the url of the blast tool                                  
     this.update_blast = function() {
-        $scope.formInfo.blast = $scope.formInfo.restServer + '/' + self.species + '/Tools/Blast';    
+        $scope.formInfo.blast = $scope.formInfo.restServer + '/' + $scope.species + '/Tools/Blast';    
+        $scope.crispr_db = $scope.extlinks[0].params[$scope.species].db;        
         $("#blast_form").action = $scope.formInfo.blast;
     };
                                        
@@ -1069,36 +1093,24 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     this.untrack = function() {
         $("#location").hide();
     };
-
-    this.goto_blast = function() {
+    
+    this.sendto = function(dest, tool) {               
         ctrl.menuHide();
         ctrl.clear_select();        
-        document.blast_form.action = $scope.formInfo.blast;        
-        var path = '/blast/ensembl';
-        
-        if ($scope.blast_type === 'nblast') {
-            document.blast_form.action = 'http://www.ncbi.nlm.nih.gov/blast/Blast.cgi';
-            path = '/blast/ncbi';
+        document.blast_form.action = $scope.formInfo.blast;        // in case it is one of ensembl servers
+
+        if (tool.url) {
+            document.blast_form.action = tool.url;            
         }
-        
-        if ($scope.blast_type === 'crispr') {
-            document.blast_form.action = 'http://crispr.dbcls.jp';
-            path = '/blast/crispr';
-        }
-        
+                
         if ($window.ga){
+            path = tool.stat;
             $window.ga('send', 'pageview', { page: path });
         }
-
-        return true;
-    };
-    
-    this.sendto = function(dest) {
-        $scope.blast_type = dest;        
-        ctrl.goto_blast();
+        
         document.blast_form.submit();
     };
-                                           
+    
                                        
     this.track = function(e, row, atype) {
         if ($scope.menu_shown) {

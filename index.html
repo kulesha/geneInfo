@@ -76,7 +76,7 @@
             
             <div class="col-xs-9" style="text-align:right">
                 <span>Species: </span>
-                <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="gi.species" ng-change="gi.update_blast()">
+                <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="species" ng-change="gi.update_blast()">
                 </select>
             </div>
                 
@@ -124,15 +124,16 @@
                 
                 <ul id="selectMenu" class="my-dropdown-menu" role="menu">
                     <li ng-repeat="link in extlinks" ng-show="valid_link(link.id)">
-                        <a tabindex="-1" ng-click="tab.sendto(link.id)">{{link.name}}</a>
+                        <a tabindex="-1" ng-click="tab.sendto(link.id, link)">{{link.name}}</a>
                     </li>
                 </ul>
   
-                <form role="form" target="gs_blast" id="blast_form" name="blast_form" method="post" ng-submit="tab.goto_blast();" action="#">
+                <form role="form" target="gs_blast" id="blast_form" name="blast_form" method="post" action="#">
                     <input type="hidden" name="query_sequence" value="{{blast_sequence}}" />
                     <input type="hidden" name="QUERY" value="{{blast_sequence}}" />
                     <input type="hidden" name="userseq" value="{{blast_sequence}}" />
                     <input type="hidden" name="PAGE_TYPE" value="BlastSearch" />
+                    <input type="hidden" name="db" id="db" value="{{crispr_db}}" />
                 </form>
                   
             </div>
