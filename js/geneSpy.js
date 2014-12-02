@@ -68,6 +68,9 @@ function getSelectedDNA() {
     } else if (document.selection && document.selection.type != "Control") {
         text = document.selection.createRange().text;
     }
+    
+    document.getElementById('copy-button').setAttribute('data-clipboard-text', text);
+    
     // remove protein sequence
     text = text.replace(/\d+\:[A-Z\-\s]+\:\d+/g, '');
     // now remove all the special chars
@@ -495,6 +498,17 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     };
             
     $scope.getBPfromAA = function(aa) {
+        
+        var coding = $scope.formInfo.coding;        
+        var aapos = [];
+        
+        if (coding) {
+            aapos.push((aa - 1) * 3); 
+            aapos.push((aa - 1) * 3 + 1); 
+            aapos.push((aa - 1) * 3 + 2); 
+            return aapos;
+        }
+        
         var gStrand = $scope.geneData.strand;
         var gStart = $scope.geneData.start;
         var gEnd = $scope.geneData.end;
@@ -504,7 +518,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         var s, e;
         var curpos = 0;
         
-        var aapos = [];
+        
         
         for(var i in mappings) {
             if (mappings[i].gap === 0) {
@@ -535,7 +549,6 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
                                       
     $scope.findAA = function(tab) {
         $scope.resetFound();
-        
         var ipos = $scope.formInfo.pos; //parseInt($scope.formInfo.pos.replace(/\,/g, ''));        
         if (! ipos) { // this will be set only if validation passes in html
             return;
@@ -551,6 +564,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         
         if (t && t.pid) {            
             var bp = $scope.getBPfromAA(ipos);
+            
             var chunkSize = $scope.formInfo.chunkSize;
             var iposPage = $scope.chunksNum ? Math.ceil(bp[1] / chunkSize) : 1;
         
@@ -778,7 +792,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
 
     $scope.selectTranscript = function(transcriptId, callback) {
         $scope.clearAllMarkup();
-        console.log( "well , well ");
+
         if (transcriptId) {
             $scope.currentTab = transcriptId;            
         }
