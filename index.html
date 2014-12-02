@@ -26,8 +26,10 @@
   //ga('send', 'pageview');
 
 </script>  
+    
 </head>
 <body ng-app="geneSpyApp" data-spy="scroll" data-target="#myScrollspy">
+
     <a id="top" name="top" href="#"></a>
     <div ng-controller="geneSpyCtrl as gi">
     <div class="jumbotron">        
@@ -166,7 +168,7 @@
                         <div class="warn" ng-show="gi.foundSeq"><span ng-bind-html="gi.foundSeq"></span></div>
                         
                         <div ng-show="tab.hasTranslation()">
-                            <em>Coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="tab.selectTranscript()" name="coding"/>
+                            <em>Coding sequence only:</em> <input type="checkbox" ng-model="formInfo.coding" ng-change="selectTranscript()" name="coding"/>
                         </div>                        
 
                         </form>   
