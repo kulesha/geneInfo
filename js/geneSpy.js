@@ -478,7 +478,6 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     this.getExonNumber = function(gene, t, pos) {
         var exons = t.Exon;
         var i = 0;
-            
         if (gene.strand === -1) {
             var aStart = gene.end - pos;
             for (var j in exons) {
@@ -496,18 +495,47 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         }            
         return { bp : aStart, exon : i};
     };
-            
+    
+    $scope.getBPfromCDS = function(pos) {
+                
+        var gStrand = $scope.geneData.strand;
+        var gStart = $scope.geneData.start;
+        var gEnd = $scope.geneData.end;
+                    
+        var mappings = $scope.geneData.mappings;
+        var s, e;
+        var curpos = 0;
+        var xpos = 0;
+        
+        for(var i in mappings) {
+            if (mappings[i].gap === 0) {
+                s = (gStrand < 0) ? gEnd - mappings[i].end : mappings[i].start - gStart;
+                e = (gStrand < 0) ? gEnd - mappings[i].start : mappings[i].end - gStart;
+
+                curpos ++;
+                var es = curpos + e - s;
+                
+                if (pos >= curpos  && pos <= es) {
+                    xpos = s + pos - curpos;
+                    break;
+                }
+                curpos = es;
+            }
+        }
+        
+        if (xpos > 0) {            
+            if (gStrand > 0) {
+                xpos = gStart + xpos;
+            } else {
+                xpos = gEnd - xpos;
+            }
+        }
+        return xpos;
+    };
+                                          
     $scope.getBPfromAA = function(aa) {
         
-        var coding = $scope.formInfo.coding;        
         var aapos = [];
-        
-        if (coding) {
-            aapos.push((aa - 1) * 3); 
-            aapos.push((aa - 1) * 3 + 1); 
-            aapos.push((aa - 1) * 3 + 2); 
-            return aapos;
-        }
         
         var gStrand = $scope.geneData.strand;
         var gStart = $scope.geneData.start;
@@ -572,10 +600,18 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
                 $scope.setPage(iposPage, $scope.findAA);            
             }
         
-            var gpos = bp.map(function(item) {
-                return item - chunkSize * ($scope.geneData.currentPage - 1);
-            });
+            var gpos;
 
+            var coding = $scope.formInfo.coding;        
+            
+            if (coding) {
+                gpos = [(ipos -1) * 3, (ipos -1) * 3 + 1, (ipos -1) * 3 + 2];
+            } else {
+                gpos = bp.map(function(item) {
+                    return item - chunkSize * ($scope.geneData.currentPage - 1);
+                });
+            }
+            
             var aaPos = gpos[1];            
             
             // now mark the AA - only the letter
@@ -594,14 +630,13 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
             var bpPos = self.getExonNumber($scope.geneData, t, bp[0]);
 
             foundExtra = '<div style="margin:0">at ' + $filter('number')(bpPos.bp) + " bp</div>";
-            if (gpos[2] - gpos[0] == 2) {
+            if (bp[2] - bp[0] == 2) {
                 foundExtra = foundExtra + 'in exon ' + bpPos.exon;
             } else { // split between exons
                 foundExtra = foundExtra + 'in exons ' + bpPos.exon + ' and ' + (bpPos.exon + 1);
             }
             
             // now markup the aa in the genomic sequence
-            var coding = $scope.formInfo.coding;        
             
             var sequence = coding ? $scope.geneData.cds : $scope.geneData.dna;
             
@@ -609,9 +644,9 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
             self.foundSeq = "Found aa: " + binseq.substr(spos, 1) + " = " + aaDNA + foundExtra; 
             $anchorScroll();            
             var binnum = $scope.geneData.segments.length;
-            
+        
             for(var i in gpos) {
-                if (gpos[i] > 0) {
+                if (gpos[i] >= 0) {
                     var sbin = Math.floor(gpos[i] / w);
                     var spos = gpos[i] % w;
                     if (sbin < binnum ) {                    
@@ -715,7 +750,6 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
                 $scope.selectTranscript($scope.geneData.currentTranscript,callback);
             } else {           
                 if (callback) { // in case of some operations we need to load a new chunk and then do something, e.g jump to a position
-                    console.log( "call callback" );
                     callback();
                 }
             }
@@ -1154,7 +1188,9 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
             var offset = $scope.chunksNum ? ($scope.geneData.currentPage -1) * $scope.formInfo.chunkSize : 0;
             
             var pos = row * $scope.formInfo.width + rowpos + offset;
-            var genomic = $scope.geneData.strand > 0 ? $scope.geneData.start + pos -1 : $scope.geneData.end - pos + 1;
+            var coding = $scope.formInfo.coding;
+            
+            var genomic = coding ? $scope.getBPfromCDS(pos) : ($scope.geneData.strand > 0 ? $scope.geneData.start + pos -1 : $scope.geneData.end - pos + 1);
             $scope.location = $filter('number')(pos) + " " + ' [' + $filter('number')(genomic) + ' bp]';
         }
         $("#location").css({top: e.clientY + 10, left: e.clientX + 20}).show();
