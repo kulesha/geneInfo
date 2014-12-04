@@ -52,14 +52,7 @@
             <a class="navbar-brand" href="/">geneScripts </a> <a class="navbar-brand" href="#"> | </a> 
             <a class="navbar-brand" href="#">geneSpy - tool to help in your genome editing work</a>
             
-            <ul class="nav navbar-nav pull-right">
-                <li>
-                
-                <span>Source: </span><select style="height:30px;margin-top:10px;" ng-options="obj.name as obj.label for obj in serverList" ng-model="formInfo.source" ng-change="gi.updateServer()">
-                </select>
-            
-                </li>
-                
+            <ul class="nav navbar-nav pull-right">                
                 <li><a href="#" ng-click="menu.show('About')">About</a></li>
             </ul>            
         </nav>
@@ -78,9 +71,15 @@
             
             <div class="col-xs-9" style="text-align:right">
                 <span>Species: </span>
-                <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="species" ng-change="gi.update_blast()">
+                <select style="height:30px" ng-options="obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:'display_name' track by obj.taxon_id" ng-model="currentSpecies" ng-change="gi.update_blast()">                                    
                 </select>
+
+                <!--
+                <select style="height:30px" ng-options="obj.name as obj.display_name + ' ('+obj.assembly+')' for obj in gi.speciesList | orderBy:' display_name'" ng-model="currentSpecies"ng-change="gi.update_blast()">                                    
+                </select>
+-->
             </div>
+            
                 
         </form>
     </div>
@@ -122,11 +121,11 @@
             <div id="location" style="position: fixed;display:none;z-index:1000;background-color:#333333;padding:5px;opacity:0.9;color:#ffffff;font-size:0.75em"> {{ location }} </div>            
             
             <div id="menuSelect">
-                <span class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;" ng-click="tab.menuHide()"></span><h5>Send sequence to</h5>
+                <span class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;" ng-click="menuHide()"></span><h5>Send sequence to</h5>
                 
                 <ul id="selectMenu" class="my-dropdown-menu" role="menu">
-                    <li ng-repeat="link in extlinks" ng-show="valid_link(link.id)">
-                        <a tabindex="-1" ng-click="tab.sendto(link.id, link)">{{link.name}}</a>
+                    <li ng-repeat="link in extlinks" ng-show="valid_link(link)">
+                        <a tabindex="-1" ng-click="tab.sendto(link)">{{link.name}}</a>
                     </li>
                 </ul>
   

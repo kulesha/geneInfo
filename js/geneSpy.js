@@ -68,9 +68,7 @@ function getSelectedDNA() {
     } else if (document.selection && document.selection.type != "Control") {
         text = document.selection.createRange().text;
     }
-    
-    document.getElementById('copy-button').setAttribute('data-clipboard-text', text);
-    
+        
     // remove protein sequence
     text = text.replace(/\d+\:[A-Z\-\s]+\:\d+/g, '');
     // now remove all the special chars
@@ -156,18 +154,14 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         gene: '',
         width: 100, 
         coding: false, 
-        restServer: 'http://rest.ensembl.org',
-        eServer: 'http://www.ensembl.org/',
-        source: 'egrch37',
-        division: 'ensembl',
         chunkSize : 250000        
     };
                                       
-    $scope.serverList = [
-        { name: 'elatest', division: 'ensembl', label: 'Ensembl ( GRCh38 )' , url: 'http://rest.ensembl.org', eurl: 'http://www.ensembl.org'},
-        { name: 'egrch37', division: 'ensembl', label: 'Ensembl ( GRCh37 )' , url: 'http://grch37.rest.ensembl.org', eurl: 'http://grch37.ensembl.org'}
+    $scope.serverList = {
+        'Ensembl' : { name: 'ensembl', division: 'ensembl', label: 'Ensembl ( GRCh38 )' , url: 'http://rest.ensembl.org', eurl: 'http://www.ensembl.org'},
+        'grch37'  : { name: 'grch37', division: 'ensembl', label: 'Ensembl ( GRCh37 )' , url: 'http://grch37.rest.ensembl.org', eurl: 'http://grch37.ensembl.org'}
 // eg rest is too slow        { name: 'eplants', division: 'plants', label: 'Plants' , url: 'http://rest.ensemblgenomes.org', eurl: 'http://plants.ensembl.org'}
-    ];
+    };
 
     $scope.range = function(min, max, step){
         step = step || 1;
@@ -281,29 +275,22 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     };
                                           
     this.updateSpecies = function() {                                  
-        var surl = $scope.formInfo.restServer + '/info/species?content-type=application/json;division='+$scope.formInfo.division;                                   
-        $scope.species = 'homo_sapiens';   
+        var surl = 'info/species.json';                                   
+                
+        var human_grch37 = {"division":"grch37", "taxon_id":"10009606", "name":"homo_sapiens", "display_name":"Human", "accession":"GCA_000001405.15", "assembly":"GRCh37"};
+        
+        $scope.species = 'homo_sapiens';
         $scope.crispr_db = 'hg19';
         
         $http.get(surl).success(function(sdata ){
             self.speciesList = sdata.species;
+            self.speciesList.push(human_grch37);
         });
-        $scope.formInfo.blast = $scope.formInfo.eServer + '/' +$scope.species + '/Tools/Blast';    
+        
+        $scope.currentSpecies = human_grch37;
         self.reset();
     }
-                                      
-    this.updateServer = function() {
-        for(var i in $scope.serverList) {
-            if ($scope.serverList[i].name === $scope.formInfo.source) {
-                $scope.formInfo.restServer = $scope.serverList[i].url;
-                $scope.formInfo.eServer = $scope.serverList[i].eurl;            
-                $scope.formInfo.division = $scope.serverList[i].division;
-                self.updateSpecies();
-            }
-        }
-        
-    };
-    
+                                          
     $scope.extlinks = [
         { id : 'crispr', name: 'CRISPRdirect', url : 'http://crispr.dbcls.jp', stat : '/tool/crispr',
             on : {
@@ -353,31 +340,23 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     ];
 
 /* some tools don;t work for all available species : this function checks if the tool is available for the current species/assembly */                                      
-    $scope.valid_link = function(link_id) {        
-        var tool;
-        for (var i in $scope.extlinks) {
-            if ($scope.extlinks[i].id == link_id) {
-                tool = $scope.extlinks[i];
-                break;
-            }
-        }
+    $scope.valid_link = function(tool) {
         if ( tool ) {
             if (tool.all) {
                 return true;
             }
             
             if (tool.on) {
-                var tool_assembly = tool.on[$scope.species].assembly;
+                var csp = $scope.currentSpecies;
+                var species = csp.name;
+                var taxon_id = csp.taxon_id;
+                
+                var tool_assembly = tool.on[species].assembly;
                 var sobj;
                 for (var i in self.speciesList) {
-                    if (self.speciesList[i].name == $scope.species) {
-                        sobj = self.speciesList[i];
-                        break;
+                    if ((self.speciesList[i].taxon_id == taxon_id) && (self.speciesList[i].assembly == tool_assembly)) {
+                        return true;
                     }
-                }
-                
-                if (sobj && sobj.assembly == tool_assembly) {                
-                    return true;
                 }
             }
         }        
@@ -390,17 +369,24 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $scope.loading = true;
         
         var gene = $scope.formInfo.gene.toUpperCase();
+
+        var csp = $scope.currentSpecies;
+        var server = $scope.serverList[csp.division];
+        
+        var species = csp.name;
         
         $scope.message = "Looking for " + gene;
-        
-        self.recordVisit($scope.formInfo.source+'/gene/'+gene);
+                
+        self.recordVisit('/gene/'+gene);
+        self.recordVisit('/species/'+csp.display_name + '-' + csp.assembly);
     
         // first we look for the gene
-        var url = $scope.formInfo.restServer + '/lookup/symbol/'+$scope.species+'/' + gene + '?content-type=application/json;expand=1';
-                
+        
+        var url = server.url + '/lookup/symbol/'+species+'/' + gene + '?content-type=application/json;expand=1';
+                        
         $http.get(url).success(function(data){
             // hooray - we have found the gene
-            data.url = $scope.formInfo.eServer + '/' + $scope.species + '/Gene/Summary?g=' + data.id;
+            data.url = server.eurl + '/' + species + '/Gene/Summary?g=' + data.id;
             
             geneFields.map(function(item) {
                 $scope.geneData[item] = data[item];
@@ -441,7 +427,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     };
                                           
     self.getFontWidth();                                                              
-    self.updateServer();                                      
+    self.updateSpecies();
 
 // if thre is gene id in the url then go directly to the gene page                                      
     var path =  $location.path();       
@@ -708,7 +694,9 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     $scope.setPage = function(page, callback) {
         var data = $scope.geneData;
         var chunkSize = $scope.formInfo.chunkSize;
-                
+        var csp = $scope.currentSpecies;
+        var species = csp.name;
+        
         $scope.loading = true;
             
             // now let's get the sequence
@@ -732,7 +720,9 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $scope.geneData.seqStart = seqStart;
         $scope.geneData.seqEnd = seqEnd;
      
-        var surl = $scope.formInfo.restServer + '/sequence/region/'+$scope.species+'/' + data.seq_region_name + ':' + seqStart + '..' + seqEnd + ':'+data.strand+'?content-type=application/json';
+        var server = $scope.serverList[csp.division];
+        
+        var surl = server.url + '/sequence/region/'+species+'/' + data.seq_region_name + ':' + seqStart + '..' + seqEnd + ':'+data.strand+'?content-type=application/json';
         $http.get(surl).success(function(seq){                                
             var w = $scope.formInfo.width;
             var restr = ".{1,"+w+"}";
@@ -853,7 +843,10 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
 
     $scope.getCodingSeq = function(t) {
         // get CDS , if you need cdna ( i.e with UTRs ) use CDNA
-        var url = $scope.formInfo.restServer + '/sequence/id/'+t.id+'?content-type=application/json;type=cds;mask_feature=1';        
+        var csp = $scope.currentSpecies;
+        var server = $scope.serverList[csp.division];
+        
+        var url = server.url + '/sequence/id/'+t.id+'?content-type=application/json;type=cds;mask_feature=1';        
         $http.get(url).success(function(data){
             $scope.geneData.cds = data.seq;
         });
@@ -881,8 +874,12 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     
     // when changing species - change the url of the blast tool                                  
     this.update_blast = function() {
-        $scope.formInfo.blast = $scope.formInfo.restServer + '/' + $scope.species + '/Tools/Blast';    
-        $scope.crispr_db = $scope.extlinks[0].params[$scope.species].db;        
+        $scope.menuHide();
+        var csp = $scope.currentSpecies;
+        var server = $scope.serverList[csp.division];
+        
+        $scope.formInfo.blast = server.url + '/' + csp.name + '/Tools/Blast';    
+        $scope.crispr_db = $scope.extlinks[0].params[csp.name].db;        
         $("#blast_form").action = $scope.formInfo.blast;
     };
                                        
@@ -964,12 +961,15 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
     
     };
     $scope.markupTranslation = function(t, callback) {
-        var url = $scope.formInfo.restServer + '/sequence/id/'+t.pid +'?content-type=application/json';
+        var csp = $scope.currentSpecies;
+        var server = $scope.serverList[csp.division];
+        
+        var url = server.url + '/sequence/id/'+t.pid +'?content-type=application/json';
         
         $http.get(url).success(function(data){
                 $scope.geneData.pseq = '-' + data.seq.split('').join('--') + '-';                
                 
-                var cds = $scope.formInfo.restServer + '/map/cds/'+t.id+'/1..3000000?content-type=application/json';
+                var cds = server.url + '/map/cds/'+t.id+'/1..3000000?content-type=application/json';
                 $http.get(cds).success(function(data){
                     var pEnd = -1;
                     var pSeq = $scope.geneData.pseq;
@@ -1062,7 +1062,13 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
                 });                    
             });                                            
     };
-                                      
+
+  $scope.menuHide = function() {
+        $("#menuSelect").hide();
+        $scope.menu_shown = 0;
+    };
+                                       
+
     // for selecting sequence to send to BLAST
     $scope.currentSelect = { start: -1, stop: -1 };                                          
 }]);
@@ -1092,28 +1098,21 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
                                        
     this.click = function(e, row, atype) {
         return;
-        $scope.menu_shown = 0;
-        ctrl.menuHide();
+        $scope.menuHide();
         ctrl.clear_select();
     };
     
     this.dblclick = function(e, row, atype) {
-        $scope.menu_shown = 0;
-        ctrl.menuHide();
+        $scope.menuHide();
         ctrl.clear_select();
     };
     
     this.start_select = function( e, row, atype ) {
         var x = this.getLinePos(e);
-        $scope.menu_shown = 0;
         $scope.currentSelect.start = $scope.formInfo.width * row + x;
-        ctrl.menuHide();
+        $scope.menuHide();
     };
     
-    this.menuHide = function() {
-        $("#menuSelect").hide();
-    };
-                                       
     this.stop_select = function( e, row, atype ) {
    
         var x = this.getLinePos(e);
@@ -1135,17 +1134,21 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
     this.clear_select = function() {
         $scope.currentSelect.start = -1;
         $scope.currentSelect.end = -1;
-        $scope.menu_shown = 0;
+        $scope.menuHide;
     };
                                        
     this.untrack = function() {
         $("#location").hide();
     };
     
-    this.sendto = function(dest, tool) {               
-        ctrl.menuHide();
+    this.sendto = function(tool) {               
+        $scope.menuHide();
         ctrl.clear_select();        
-        document.blast_form.action = $scope.formInfo.blast;        // in case it is one of ensembl servers
+        
+        var csp = $scope.currentSpecies;
+        var server = $scope.serverList[csp.division];
+                         
+        document.blast_form.action = server.eurl + '/' + csp.name + '/Tools/Blast'; // in case it is one of ensembl servers
 
         if (tool.url) {
             document.blast_form.action = tool.url;            
