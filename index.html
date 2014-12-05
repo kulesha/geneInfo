@@ -38,10 +38,17 @@
                 <div class="modal-header">
                     <h3>{{ items[0] }}</h3>
                 </div>
-                <div style="margin-left:20px">
-                    <p>geneSpy, version 0.8<br/><br/>
-                    Created by <a href="https://www.linkedin.com/in/kulesha">Eugene Kulesha</a> and <a href="https://www.linkedin.com/in/veragrinkevich">Vera Grinkevich</a> <br/><br/>
-                    Thanks to Magali Ruffier for updates to e! REST API<br><br/>
+                <div style="margin:20px;">
+                    <p>
+                    geneSpy is created by <a href="https://www.linkedin.com/in/kulesha">Eugene Kulesha</a> and <a href="https://www.linkedin.com/in/veragrinkevich">Vera Grinkevich</a> and is released under the <a href="i/licence.html">Apache 2.0 licence</a>  <br/><br/>
+
+                    It is a free, open source application developed to help users of CRISPR technology in their genome editing work. <br/><br/>
+                    geneSpy uses the data provided by <a href="http://www.ensembl.org">Ensembl</a> project via its <a href="http://rest.ensembl.org">REST API</a> interface.<br/><br/>
+                    
+                    We provide this tool in good faith, but make no warranty, express or implied, nor assume any legal liability or responsibility for any purpose for which it is used. <br/><br/>
+                    
+
+                    Thanks to Magali Ruffier for making requested changes to the Ensembl REST API !<br><br/>
                     <i>All enquiries please contact kulesha@gmail.com</i></p>                    
                 </div>
                 <div class="modal-footer">
@@ -50,7 +57,7 @@
             </script>
             
             <a class="navbar-brand" href="/">geneScripts </a> <a class="navbar-brand" href="#"> | </a> 
-            <a class="navbar-brand" href="#">geneSpy - tool to help in your genome editing work</a>
+            <a class="navbar-brand" href="#">geneSpy - multifunctional tool for genome editing</a>
             
             <ul class="nav navbar-nav pull-right">                
                 <li><a href="#" ng-click="menu.show('About')">About</a></li>
@@ -104,13 +111,10 @@
         <br/>
         <p>
             <ol>
-                <li>Choose the source of the data ( top right corner ): By default the tool works with the latest species assemblies used by <a href="http://www.ensembl.org">Ensembl</a>. You can choose an older assembly used in <a href="http://grch37.ensembl.org">Ensembl GRCh37</a>.</li>
-                <li>Select the species of interest.</li>
-                <li>Enter your gene name and click Find.</li>
-                <li>To see the protein sequence choose a transcript from the dropdown.</li>
-                <li>Now you can locate an amino acid by its position or,</li>
-                <li>Find a piece of DNA in the displayed sequence or,</li>                
-                <li>Select a fragment of DNA using your mouse ( you can go across multiple lines ) and send it to the BLAST tool.</li>
+                <li>Helps you to edit any gene of any genome provided by <a href="http://www.ensembl.org">Ensembl project</a>.</li>
+                <li>Displays  gene introns, exons and protein sequence side by side.</li>
+                <li>Locates amino acid or nucleotide by its position, performs DNA sequence search.</li>
+                <li>Allows to select a sequence fragment for submission to <a href="http://www.ensembl.org/Multi/Tools/Blast">BLAST</a> similarity search and <a href="http://crispr.dbcls.jp">CRISPRdirect</a> gRNA design tool.</li>
             </ol>
         </p>
     </div>    
@@ -190,7 +194,7 @@
                 <div class="col-xs-8">                
                     <table class="table table-condensed table-striped" style="margin-left:15px;margin-right:15px;">
                     <tr>
-                        <th class="col-xs-2">Gene name</th><td><b>{{geneData.display_name}}</b> <em>(Ensembl ID: {{geneData.id}} ) </em><a href="{{geneData.url}}" target="_blank"><img src="i/e-quest.gif" title="View in Ensembl" /></a></td>
+                        <th class="col-xs-2">Gene name</th><td><b>{{geneData.display_name}}</b> <em>(Ensembl ID:<a href="{{geneData.url}}" target="_blank"> {{geneData.id}} </a></em>)</td>
                     </tr>
                     <tr>
                         <th>Description</th><td>{{geneData.description}}</td>
@@ -252,14 +256,16 @@
             </div>  
         </div>
     </div>
-    <div style="height:30px">&nbsp;</div>
+    <div class="container text-center" style="height:50px">
+        <span><a href="{{formInfo.restServer}}"><img src="i/empowered.png" /></a></span>        
+    </div>
 
     
     <div id="footer" class="panel-footer">        
         <div class="container text-center">
-            <p class="text-muted credit"><span class="pull-left">Created by <a href="https://www.linkedin.com/in/kulesha">Eugene Kulesha</a></span> &copy;2014
-            <span class="pull-right">In partnership with <a href="https://www.linkedin.com/in/veragrinkevich">Vera Grinkevich</a></span></p>
-            <p class="text-muted credit">Powered by <a href="{{formInfo.restServer}}"><img src="i/e-quest.gif" /> REST API</a></p>
+            <p class="text-muted credit"><span class="pull-left">Created by <a href="https://www.linkedin.com/in/kulesha">Eugene Kulesha</a></span> <a href="i/licence.html">&copy; Dec 2014</a>
+            <span class="pull-right">In partnership with <a href="https://www.linkedin.com/in/veragrinkevich">Vera Grinkevich</a></span>            
+            </p>
             
         </div>
     </div>

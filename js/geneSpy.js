@@ -1063,7 +1063,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
             });                                            
     };
 
-  $scope.menuHide = function() {
+    $scope.menuHide = function() {
         $("#menuSelect").hide();
         $scope.menu_shown = 0;
     };
