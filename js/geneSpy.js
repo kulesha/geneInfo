@@ -1,41 +1,44 @@
+"use strict";
+
 var geneFields = ['id', 'start', 'end', 'strand', 'description', 'display_name', 'seq_region_name', 'url'];
 var exonStart = '<div class="exon">';
 var exonEnd = '</div>';
 var foundStart = '<span class="tag">';
 var foundEnd = '</span>';
 var markStart = '<h5 class="mark">';
-var markEnd= '</h5>';
+var markEnd = '</h5>';
         
-String.prototype.getDNAPos = function(pos) {
-    return this.split(/[A-Z]/, pos).join('X').length;                      
-}
+String.prototype.getDNAPos = function (pos) {
+    return this.split(/[A-Z]/, pos).join('X').length;
+};
 
-String.prototype.regexIndexOf = function(regex, startpos) {
+String.prototype.regexIndexOf = function (regex, startpos) {
     var indexOf = this.substring(startpos || 0).search(regex);
     return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
-}
+};
 
-String.prototype.regexLastIndexOf = function(regex, startpos) {
+String.prototype.regexLastIndexOf = function (regex, startpos) {
     regex = (regex.global) ? regex : new RegExp(regex.source, "g" + (regex.ignoreCase ? "i" : "") + (regex.multiLine ? "m" : ""));
-    if(typeof (startpos) == "undefined") {
+    if (typeof (startpos) === "undefined") {
         startpos = this.length;
-    } else if(startpos < 0) {
+    } else if (startpos < 0) {
         startpos = 0;
     }
-    var stringToWorkWith = this.substring(0, startpos + 1);
-    var lastIndexOf = -1;
-    var nextStop = 0;
-    while((result = regex.exec(stringToWorkWith)) != null) {
+    var result, stringToWorkWith = this.substring(0, startpos + 1), lastIndexOf = -1, nextStop = 0;
+    while ((result = regex.exec(stringToWorkWith)) !== null) {
         lastIndexOf = result.index;
-        regex.lastIndex = ++nextStop;
+        nextStop += 1;
+        regex.lastIndex = nextStop;
     }
     return lastIndexOf;
-}
+};
 
 // function to add C character Len times
-function repeat(c, len) {   
-    for (var e = ''; e.length < len;)
+function repeat(c, len) {
+    var e = '';
+    while (e.length < len) {
         e += c;
+    }
     return e;
 }
 
@@ -227,6 +230,8 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $scope.message = '';
         $scope.location = 0;
         $scope.chunksNum = 0;
+        $scope.menu_shown = 0;
+        
         if ($scope.geneData) {
             if ($scope.geneData.tlist) {
                 for (var i in $scope.geneData.tlist) {
@@ -332,8 +337,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
                 'bombyx_mori': { 'assembly' : 'Bmor1', 'db' : 'bmor1' },
                 'saccharomyces_cerevisiae': { 'assembly' : 'sacCer3', 'db' : 'sacCer3' },
                 'schizosaccharomyces_pombe': { 'assembly' : 'ASM294v2', 'db' : 'pombe' }
-            },
-         
+            }         
         },
         { id : 'nblast', name: 'BLAST(ncbi)', url : 'http://www.ncbi.nlm.nih.gov/blast/Blast.cgi', stat : '/tool/nblast', 'all' : 1 },
         { id : 'eblast', name: 'BLAST(ensembl)', url : $scope.formInfo.blast, stat : '/tool/eblast', 'all' : 1 }
@@ -1065,11 +1069,15 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
 
     $scope.menuHide = function() {
         $("#menuSelect").hide();
-        $scope.menu_shown = 0;
+        $scope.menu_shown = 0;        
     };
-                                       
 
-    // for selecting sequence to send to BLAST
+    $scope.menuShow = function(e) {
+        $("#menuSelect").css({top: e.clientY + 5, left: e.clientX + 5}).show();
+        $scope.menu_shown = 1;        
+    };
+
+                                      // for selecting sequence to send to BLAST
     $scope.currentSelect = { start: -1, stop: -1 };                                          
 }]);
 
@@ -1095,13 +1103,7 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         return rowpos;
     };
                           
-                                       
-    this.click = function(e, row, atype) {
-        return;
-        $scope.menuHide();
-        ctrl.clear_select();
-    };
-    
+                                           
     this.dblclick = function(e, row, atype) {
         $scope.menuHide();
         ctrl.clear_select();
@@ -1126,15 +1128,15 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
 
         $scope.blast_sequence = getSelectedDNA();
         $("#location").hide();
-        $("#menuSelect").css({top: e.clientY + 5, left: e.clientX + 5}).show();
-        $scope.menu_shown = 1;
+        $scope.menuShow(e);
+        $scope.currentSelect.start = -1;
         
     };
     
     this.clear_select = function() {
         $scope.currentSelect.start = -1;
         $scope.currentSelect.end = -1;
-        $scope.menuHide;
+        $scope.menuHide();
     };
                                        
     this.untrack = function() {
@@ -1162,9 +1164,12 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         document.blast_form.submit();
     };
     
+    $scope.menuShown = function() {
+        return $("#menuSelect").is(':visible');
+    };
                                        
     this.track = function(e, row, atype) {
-        if ($scope.menu_shown) {
+        if ($scope.menuShown()) {
             return;
         }
         if ($scope.currentSelect.start > 0) {
