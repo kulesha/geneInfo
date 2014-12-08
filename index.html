@@ -22,7 +22,7 @@
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-55089504-1', 'auto');
+  ga('create', 'UA-55089504-2', 'auto');
   //ga('send', 'pageview');
 
 </script>  
@@ -125,7 +125,7 @@
             <div id="location" style="position: fixed;display:none;z-index:1000;background-color:#333333;padding:5px;opacity:0.9;color:#ffffff;font-size:0.75em"> {{ location }} </div>            
             
             <div id="menuSelect">
-                <span class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;" ng-click="menuHide()"></span><h5>Send sequence to</h5>
+                <span class="glyphicon glyphicon-remove" style="float:right;cursor:pointer;padding-bottom:2px;margin-right:3px;color:#191970;" ng-click="menuHide()"></span><h5>Send sequence to</h5>
                 
                 <ul id="selectMenu" class="my-dropdown-menu" role="menu">
                     <li ng-repeat="link in extlinks" ng-show="valid_link(link)">
@@ -133,11 +133,12 @@
                     </li>
                 </ul>
   
-                <form role="form" target="gs_blast" id="blast_form" name="blast_form" method="post" action="#">
+                <form role="form" target="gs_blast" id="blast_form" style="margin:0; padding:0" name="blast_form" method="post" action="#">
                     <input type="hidden" name="query_sequence" value="{{blast_sequence}}" />
+                    <input type="hidden" name="search_type" value="NCBIBLAST_BLASTN" />
                     <input type="hidden" name="QUERY" value="{{blast_sequence}}" />
-                    <input type="hidden" name="userseq" value="{{blast_sequence}}" />
                     <input type="hidden" name="PAGE_TYPE" value="BlastSearch" />
+                    <input type="hidden" name="userseq" value="{{blast_sequence}}" />
                     <input type="hidden" name="db" id="db" value="{{crispr_db}}" />
                 </form>
                   
@@ -256,7 +257,7 @@
             </div>  
         </div>
     </div>
-    <div class="container text-center" style="height:50px">
+    <div class="container text-center" style="height:50px;margin-top:30px;">
         <span><a href="{{formInfo.restServer}}"><img src="i/empowered.png" /></a></span>        
     </div>
 
