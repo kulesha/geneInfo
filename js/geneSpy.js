@@ -98,7 +98,16 @@ function elementCurrentStyle(element, styleName){
     }
 }
 
-
+function recordVisit(path) {
+    var host = window.location.hostname;
+    if (host.match("localhost")) {
+        return;
+    }
+    if (window.ga){
+        window.ga('send', 'pageview', { page: path });
+    }
+}
+        
 // Define the app, ngSanitize is needed to enable passing plain html into ng-repeat
 var myApp = angular.module('geneSpyApp', ['ngSanitize', 'ui.bootstrap']) .filter('baseCount', function() {    
         return function(input) { 
@@ -273,11 +282,6 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $scope.fontWidth = getTextWidth(text, font) / $scope.formInfo.width;
     };
     
-    this.recordVisit = function(path) {                                  
-        if ($window.ga){
-            $window.ga('send', 'pageview', { page: path });
-        }
-    };
                                           
     this.updateSpecies = function() {                                  
         var surl = 'info/species.json';                                   
@@ -381,8 +385,8 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         
         $scope.message = "Looking for " + gene;
                 
-        self.recordVisit('/gene/'+gene);
-        self.recordVisit('/species/'+csp.display_name + '-' + csp.assembly);
+        recordVisit('/gene/'+gene);
+        recordVisit('/species/'+csp.display_name + '-' + csp.assembly);
     
         // first we look for the gene
         
@@ -441,7 +445,7 @@ myApp.controller('geneSpyCtrl', ['$scope', '$http', '$sce','$location', '$anchor
         $scope.formInfo.gene = match[1];
         $scope.findGene();
     } else {                                          
-        self.recordVisit("/");
+        recordVisit("/");
     }
                                                                             
     // function that will be called on form submit
@@ -1155,12 +1159,8 @@ myApp.controller('TabController', ['$scope', '$http', '$location', '$anchorScrol
         if (tool.url) {
             document.blast_form.action = tool.url;            
         }
-                
-        if ($window.ga){
-            path = tool.stat;
-            $window.ga('send', 'pageview', { page: path });
-        }
         
+        recordVisit(tool.stat);        
         document.blast_form.submit();
     };
     
