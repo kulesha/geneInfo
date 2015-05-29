@@ -1,4 +1,4 @@
-http://genescripts.org/geneSpy
+http://genespy.genescripts.org
 
 geneSpy
 =======
